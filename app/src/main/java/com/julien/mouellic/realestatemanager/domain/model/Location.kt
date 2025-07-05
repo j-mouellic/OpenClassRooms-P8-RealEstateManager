@@ -1,4 +1,4 @@
-package com.julien.mouellic.realestatemanager.domain.models
+package com.julien.mouellic.realestatemanager.domain.model
 
 data class Location(
     val city : String,
