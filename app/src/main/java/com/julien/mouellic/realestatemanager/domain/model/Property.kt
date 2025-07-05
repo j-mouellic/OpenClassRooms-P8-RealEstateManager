@@ -1,4 +1,4 @@
-package com.julien.mouellic.realestatemanager.domain.models
+package com.julien.mouellic.realestatemanager.domain.model
 
 import java.time.Instant
 
@@ -19,6 +19,6 @@ data class Property(
     val type : EstateType,
     val location : Location,
     val agent : Agent,
-    val commodities : List<Commodities>,
+    val commodities : List<Commodity>,
     val pictures : List<Picture>
 )
