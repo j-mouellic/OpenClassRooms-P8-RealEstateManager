@@ -1,6 +1,6 @@
 package com.julien.mouellic.realestatemanager.domain.model
 
-data class Commodity(
+data class RealEstateType(
     val id: Long?,
     val name: String,
 )
