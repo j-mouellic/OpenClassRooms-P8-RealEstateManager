@@ -1,6 +1,6 @@
-package com.julien.mouellic.realestatemanager.domain.model
+package com.julien.mouellic.realestatemanager.data.dto
 
-data class Agent(
+data class AgentDTO(
     val id : Long?,
     val firstName : String,
     val lastName : String,

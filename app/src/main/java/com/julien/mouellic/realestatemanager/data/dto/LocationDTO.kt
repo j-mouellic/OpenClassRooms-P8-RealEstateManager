@@ -1,6 +1,6 @@
-package com.julien.mouellic.realestatemanager.domain.model
+package com.julien.mouellic.realestatemanager.data.dto
 
-data class Location(
+data class LocationDTO(
     val id : Long?,
     val city : String,
     val postalCode : String,
