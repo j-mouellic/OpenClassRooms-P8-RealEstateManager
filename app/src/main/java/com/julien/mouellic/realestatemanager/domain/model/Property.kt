@@ -1,6 +1,5 @@
 package com.julien.mouellic.realestatemanager.domain.model
 
-import com.julien.mouellic.realestatemanager.data.dto.PropertyDTO
 import java.time.Instant
 
 data class Property(
@@ -17,9 +16,9 @@ data class Property(
     val entryDate : Instant?,
     val saleDate : Instant?,
     val apartmentNumber : Int?,
-    val type : RealEstateType?,
-    val location : Location?,
+    val location: Location?,
     val agent : Agent?,
-    val commodities : List<Commodity>?,
-    val pictures : List<Picture>?
+    val type : RealEstateType?,
+    val commodities : List<Commodity>,
+    val pictures : List<Picture>
 )
