@@ -1,5 +1,9 @@
 package com.julien.mouellic.realestatemanager.domain.model
 
+import androidx.room.Ignore
+import com.julien.mouellic.realestatemanager.data.entity.LocationDTO
+import com.julien.mouellic.realestatemanager.data.mapper.LocationMapper
+
 data class Location(
     val id : Long?,
     val city : String,
@@ -9,4 +13,9 @@ data class Location(
     val country : String?,
     val longitude : Double?,
     val latitude : Double?
-)
+){
+    @Ignore
+    fun toDto(): LocationDTO {
+        return LocationMapper().modelToDto(this)
+    }
+}
