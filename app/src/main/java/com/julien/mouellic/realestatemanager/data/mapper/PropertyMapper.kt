@@ -20,6 +20,9 @@ class PropertyMapper {
             entryDate = property.entryDate,
             saleDate = property.saleDate,
             apartmentNumber = property.apartmentNumber,
+            agentId = property.agent?.id,
+            locationId = property.location?.id,
+            realEstateType = property.realEstateType?.id,
         )
     }
 
@@ -38,9 +41,9 @@ class PropertyMapper {
             entryDate = propertyDTO.entryDate,
             saleDate = propertyDTO.saleDate,
             apartmentNumber = propertyDTO.apartmentNumber,
-            agentId = null,
-            locationId = null,
-            type = null,
+            agent = null,
+            location = null,
+            realEstateType = null,
             commodities = emptyList(),
             pictures = emptyList()
         )

@@ -9,7 +9,7 @@ data class Commodity(
     val name: String,
 ){
     @Ignore
-    fun toDto(): CommodityDTO {
+    fun toDTO(): CommodityDTO {
         return CommodityMapper().modelToDto(this)
     }
 }

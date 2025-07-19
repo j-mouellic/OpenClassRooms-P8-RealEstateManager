@@ -35,7 +35,7 @@ import org.threeten.bp.Instant
     indices = [
         Index(value = ["agent_id"]),
         Index(value = ["location_id"]),
-        Index(value = ["type_id"])
+        Index(value = ["real_estate_type_id"]),
     ]
 )
 data class PropertyDTO(
@@ -50,7 +50,7 @@ data class PropertyDTO(
     @ColumnInfo(name = "description")
     val description: String?,
 
-    @ColumnInfo(name = "surfaced")
+    @ColumnInfo(name = "surface")
     val surface: Double?,
 
     @ColumnInfo(name = "numbers_of_rooms")
@@ -80,8 +80,8 @@ data class PropertyDTO(
     @ColumnInfo(name = "apartment_number")
     val apartmentNumber: Int?,
 
-    @ColumnInfo(name = "type_id")
-    val typeId: Long?,
+    @ColumnInfo(name = "real_estate_type_id")
+    val realEstateTypeId: Long?,
 
     @ColumnInfo(name = "location_id")
     val locationId: Long?,

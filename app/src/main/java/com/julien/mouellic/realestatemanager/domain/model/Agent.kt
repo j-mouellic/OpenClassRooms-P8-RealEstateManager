@@ -13,7 +13,7 @@ data class Agent(
     val realEstateAgency : String
 ){
     @Ignore
-    fun toDto(): AgentDTO {
+    fun toDTO(): AgentDTO {
         return AgentMapper().modelToDto(this)
     }
 }

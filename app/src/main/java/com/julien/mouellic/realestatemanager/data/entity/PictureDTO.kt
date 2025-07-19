@@ -29,7 +29,7 @@ data class PictureDTO(
     val content : Bitmap,
 
     @ColumnInfo(name = "thumbnail_content")
-    val thumbnailContent : Bitmap, // TODO : column info
+    val thumbnailContent : Bitmap,
 
     @ColumnInfo(name = "order")
     val order: Int,

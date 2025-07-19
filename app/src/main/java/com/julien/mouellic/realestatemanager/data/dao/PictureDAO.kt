@@ -1,0 +1,33 @@
+package com.julien.mouellic.realestatemanager.data.dao
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.julien.mouellic.realestatemanager.data.entity.PictureDTO
+import kotlinx.coroutines.flow.Flow
+
+
+@Dao
+interface PictureDAO {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(picture: PictureDTO): Long
+
+    @Update
+    suspend fun update(picture: PictureDTO)
+
+    @Delete
+    suspend fun delete(picture: PictureDTO)
+
+    @Query("SELECT * FROM pictures")
+    fun getAllPictures(): Flow<List<PictureDTO>>
+
+    @Query("SELECT * FROM pictures WHERE picture_id = :id")
+    suspend fun getPictureById(id: Long): PictureDTO?
+
+    @Query("SELECT * FROM pictures WHERE property_id = :propertyId")
+    fun getPicturesForProperty(propertyId: Long): Flow<List<PictureDTO>>
+}

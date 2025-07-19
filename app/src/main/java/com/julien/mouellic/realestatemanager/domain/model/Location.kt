@@ -15,7 +15,7 @@ data class Location(
     val latitude : Double?
 ){
     @Ignore
-    fun toDto(): LocationDTO {
+    fun toDTO(): LocationDTO {
         return LocationMapper().modelToDto(this)
     }
 }

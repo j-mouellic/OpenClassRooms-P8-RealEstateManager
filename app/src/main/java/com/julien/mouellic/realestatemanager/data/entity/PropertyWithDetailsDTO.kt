@@ -3,8 +3,10 @@ package com.julien.mouellic.realestatemanager.data.entity
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.julien.mouellic.realestatemanager.data.dao.RealEstateTypeDAO
+import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 
-data class PropertyWithDetails(
+data class PropertyWithDetailsDTO(
     @Embedded val propertyEntity: PropertyDTO,
 
     @Relation(
@@ -20,8 +22,14 @@ data class PropertyWithDetails(
     val location: LocationDTO?,
 
     @Relation(
-        parentColumn = "id",
-        entityColumn = "property_id"
+        parentColumn = "real_estate_type_id",
+        entityColumn = "id"
+    )
+    val realEstateType: RealEstateTypeDTO?,
+
+    @Relation(
+        parentColumn = "picture_id",
+        entityColumn = "id"
     )
     val pictures: List<PictureDTO>?,
 
@@ -35,15 +43,4 @@ data class PropertyWithDetails(
         )
     )
     val commodities: List<CommodityDTO>?,
-
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "id",
-        associateBy = Junction(
-            value = PropertyRealEstateTypeCrossRef::class,
-            parentColumn = "property_id",
-            entityColumn = "real_estate_type_id"
-        )
-    )
-    val realEstateTypes: List<RealEstateTypeDTO>?,
 )

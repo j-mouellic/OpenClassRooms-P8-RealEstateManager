@@ -12,7 +12,7 @@ data class Picture(
     val order: Int
 ){
     @Ignore
-    fun toDto(): PictureDTO {
+    fun toDTO(): PictureDTO {
         return PictureMapper().modelToDTO(this)
     }
 }

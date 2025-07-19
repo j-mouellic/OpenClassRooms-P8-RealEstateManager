@@ -9,7 +9,7 @@ data class RealEstateType(
     val name: String,
 ){
     @Ignore
-    fun toDto(): RealEstateTypeDTO {
+    fun toDTO(): RealEstateTypeDTO {
         return RealEstateTypeMapper().modelToDto(this)
     }
 }
