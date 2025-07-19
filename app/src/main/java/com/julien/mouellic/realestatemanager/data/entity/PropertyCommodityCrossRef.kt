@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.data.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -27,6 +28,9 @@ import androidx.room.Index
     ]
 )
 data class PropertyCommodityCrossRef(
+    @ColumnInfo(name = "property_id")
     val propertyId: Long,
+
+    @ColumnInfo(name = "commodity_id")
     val commodityId: Long
 )

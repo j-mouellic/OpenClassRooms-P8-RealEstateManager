@@ -65,7 +65,7 @@ data class PropertyDTO(
     @ColumnInfo(name = "price")
     val price: Double?,
 
-    @ColumnInfo(name = "isSold")
+    @ColumnInfo(name = "is_sold")
     val isSold: Boolean,
 
     @ColumnInfo(name = "creation_date")
