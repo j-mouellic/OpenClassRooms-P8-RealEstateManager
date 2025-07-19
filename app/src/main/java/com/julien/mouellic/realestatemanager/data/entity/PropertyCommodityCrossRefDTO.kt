@@ -27,7 +27,7 @@ import androidx.room.Index
         Index(value = ["commodity_id"])
     ]
 )
-data class PropertyCommodityCrossRef(
+data class PropertyCommodityCrossRefDTO(
     @ColumnInfo(name = "property_id")
     val propertyId: Long,
 

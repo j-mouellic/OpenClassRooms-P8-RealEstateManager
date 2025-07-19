@@ -4,11 +4,8 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Junction
 import androidx.room.Relation
-import com.julien.mouellic.realestatemanager.data.mapper.PropertyMapper
 import com.julien.mouellic.realestatemanager.data.mapper.PropertyWithDetailsMapper
-import com.julien.mouellic.realestatemanager.data.mapper.RealEstateTypeMapper
 import com.julien.mouellic.realestatemanager.domain.model.Property
-import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 
 data class PropertyWithDetailsDTO(
     @Embedded val propertyEntity: PropertyDTO,
@@ -41,7 +38,7 @@ data class PropertyWithDetailsDTO(
         parentColumn = "id",
         entityColumn = "id",
         associateBy = Junction(
-            value = PropertyCommodityCrossRef::class,
+            value = PropertyCommodityCrossRefDTO::class,
             parentColumn = "property_id",
             entityColumn = "commodity_id"
         )
