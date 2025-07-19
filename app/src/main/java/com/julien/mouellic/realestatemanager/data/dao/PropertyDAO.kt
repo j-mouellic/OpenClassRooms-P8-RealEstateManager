@@ -21,7 +21,7 @@ interface PropertyDAO {
     @Update
     suspend fun update(properties: List<PropertyDTO>): Int
 
-    @Query("UPDATE properties SET isSold = :sold WHERE property_id = :id")
+    @Query("UPDATE properties SET is_sold = :sold WHERE property_id = :id")
     suspend fun updateSoldStatus(sold: Boolean, id: Long)
 
     /** DELETE **/
@@ -66,7 +66,7 @@ interface PropertyDAO {
             p.surface AS surface,
             p.numbers_of_rooms AS numbersOfRooms,
             p.price,
-            p.isSold,
+            p.is_sold,
             p.creation_date AS creationDate,
             p.entry_date AS entryDate,
             p.sale_date AS saleDate,
@@ -77,15 +77,16 @@ interface PropertyDAO {
             l.country,
             l.longitude,
             l.latitude,
-            a.first_name || ' ' || a.last_name AS agentName
-            -- Ajoute ici les GROUP_CONCAT pour les commodités et images si utiles
+            a.first_name || ' ' || a.last_name AS agentName,
+            COALESCE(GROUP_CONCAT(c.name,','),'') AS commoditiesName,
+            pi.content AS picture
         FROM properties p
         LEFT JOIN real_estate_types t ON t.real_estate_type_id = p.real_estate_type_id
         LEFT JOIN locations l ON l.location_id = p.location_id
         LEFT JOIN agents a ON a.agent_id = p.agent_id
-        -- LEFT JOIN property_commodity pc ON pc.property_id = p.property_id (à créer si tu as cette table de relation)
-        -- LEFT JOIN commodities c ON c.commodity_id = pc.commodity_id
-        -- LEFT JOIN pictures pi ON pi.property_id = p.property_id AND pi.`order` = 0
+        LEFT JOIN property_commodity pc ON pc.property_id = p.property_id 
+        LEFT JOIN commodities c ON c.commodity_id = pc.commodity_id
+        LEFT JOIN pictures pi ON pi.property_id = p.property_id AND pi.`order` = 0
         WHERE
             (:type IS NULL OR t.real_estate_type_id = :type) AND
             (:minPrice IS NULL OR p.price >= :minPrice) AND
@@ -94,8 +95,7 @@ interface PropertyDAO {
             (:maxSurface IS NULL OR p.surface <= :maxSurface) AND
             (:minNbRooms IS NULL OR p.numbers_of_rooms >= :minNbRooms) AND
             (:maxNbRooms IS NULL OR p.numbers_of_rooms <= :maxNbRooms) AND
-            (:isAvailable IS NULL OR p.isSold = :isAvailable)
-            -- Ajoute la clause commodities si tu implémentes la table de jointure
+            (:isAvailable IS NULL OR p.is_sold = :isAvailable)
         GROUP BY p.property_id
         """
     )

@@ -17,17 +17,20 @@ interface PictureDAO {
     suspend fun insert(picture: PictureDTO): Long
 
     @Update
-    suspend fun update(picture: PictureDTO)
+    suspend fun update(picture: PictureDTO): Int
 
     @Delete
     suspend fun delete(picture: PictureDTO)
 
+    @Query("DELETE FROM pictures WHERE property_id NOT IN (SELECT property_id FROM properties)")
+    suspend fun deleteUnused()
+
     @Query("SELECT * FROM pictures")
-    fun getAllPictures(): Flow<List<PictureDTO>>
+    fun getAll(): Flow<List<PictureDTO>>
 
     @Query("SELECT * FROM pictures WHERE picture_id = :id")
-    suspend fun getPictureById(id: Long): PictureDTO?
+    suspend fun getById(id: Long): PictureDTO?
 
     @Query("SELECT * FROM pictures WHERE property_id = :propertyId")
-    fun getPicturesForProperty(propertyId: Long): Flow<List<PictureDTO>>
+    fun getForProperty(propertyId: Long): Flow<List<PictureDTO>>
 }

@@ -10,7 +10,7 @@ import com.julien.mouellic.realestatemanager.data.entity.AgentDTO
 
 @Dao
 interface AgentDAO {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(agent: AgentDTO): Long
 
     @Update

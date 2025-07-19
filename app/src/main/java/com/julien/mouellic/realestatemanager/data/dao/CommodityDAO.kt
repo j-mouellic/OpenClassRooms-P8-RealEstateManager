@@ -6,13 +6,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 import com.julien.mouellic.realestatemanager.data.entity.CommodityDTO
 
 @Dao
 interface CommodityDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(commodity: CommodityDTO): Long
 
     @Update
@@ -22,8 +21,8 @@ interface CommodityDAO {
     suspend fun delete(commodity: CommodityDTO)
 
     @Query("SELECT * FROM commodities")
-    suspend fun getAllCommodities(): List<CommodityDTO>
+    suspend fun getAll(): List<CommodityDTO>
 
     @Query("SELECT * FROM commodities WHERE commodity_id = :id")
-    suspend fun getCommodityById(id: Long): CommodityDTO?
+    suspend fun getById(id: Long): CommodityDTO?
 }

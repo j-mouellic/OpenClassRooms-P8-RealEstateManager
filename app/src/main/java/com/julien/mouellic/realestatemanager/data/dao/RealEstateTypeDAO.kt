@@ -13,19 +13,19 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RealEstateTypeDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(realEstateType: RealEstateTypeDTO): Long
 
     @Update
-    suspend fun update(realEstateType: RealEstateTypeDTO)
+    suspend fun update(realEstateType: RealEstateTypeDTO): Int
 
     @Delete
     suspend fun delete(realEstateType: RealEstateTypeDTO)
 
     @Query("SELECT * FROM real_estate_types")
-    fun getAllRealEstateTypes(): Flow<List<RealEstateTypeDTO>>
+    fun getAll(): Flow<List<RealEstateTypeDTO>>
 
     @Query("SELECT * FROM real_estate_types WHERE real_estate_type_id = :id")
-    suspend fun getRealEstateTypeById(id: Long): RealEstateTypeDTO?
+    suspend fun getById(id: Long): RealEstateTypeDTO?
 }
 
