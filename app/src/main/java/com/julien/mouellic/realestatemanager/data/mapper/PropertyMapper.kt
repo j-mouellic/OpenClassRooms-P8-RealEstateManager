@@ -1,14 +1,11 @@
 package com.julien.mouellic.realestatemanager.data.mapper
 
-import com.julien.mouellic.realestatemanager.data.dto.AgentDTO
-import com.julien.mouellic.realestatemanager.data.dto.PropertyDTO
-import com.julien.mouellic.realestatemanager.domain.model.Agent
+import com.julien.mouellic.realestatemanager.data.entity.PropertyDTO
 import com.julien.mouellic.realestatemanager.domain.model.Property
-import java.time.Instant
 
 class PropertyMapper {
 
-    fun toDto(property: Property): PropertyDTO {
+    fun modelToDto(property: Property): PropertyDTO {
         return PropertyDTO(
             id = property.id,
             name = property.name,
@@ -26,7 +23,7 @@ class PropertyMapper {
         )
     }
 
-    fun toModel(propertyDTO: PropertyDTO): Property {
+    fun dtoToModel(propertyDTO: PropertyDTO): Property {
         return Property(
             id = propertyDTO.id,
             name = propertyDTO.name,
@@ -41,6 +38,11 @@ class PropertyMapper {
             entryDate = propertyDTO.entryDate,
             saleDate = propertyDTO.saleDate,
             apartmentNumber = propertyDTO.apartmentNumber,
+            agentId = null,
+            locationId = null,
+            type = null,
+            commodities = emptyList(),
+            pictures = emptyList()
         )
     }
 }

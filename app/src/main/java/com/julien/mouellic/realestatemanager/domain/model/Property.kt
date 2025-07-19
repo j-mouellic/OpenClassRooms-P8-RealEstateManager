@@ -1,7 +1,8 @@
 package com.julien.mouellic.realestatemanager.domain.model
 
-import com.julien.mouellic.realestatemanager.data.dto.PropertyDTO
-import java.time.Instant
+import androidx.room.Ignore
+import com.julien.mouellic.realestatemanager.data.mapper.PropertyMapper
+import org.threeten.bp.Instant
 
 data class Property(
     val id : Long?,
@@ -17,9 +18,14 @@ data class Property(
     val entryDate : Instant?,
     val saleDate : Instant?,
     val apartmentNumber : Int?,
-    val type : RealEstateType?,
-    val location : Location?,
+    val location: Location?,
     val agent : Agent?,
-    val commodities : List<Commodity>?,
-    val pictures : List<Picture>?
-)
+    val type : RealEstateType?,
+    val commodities : List<Commodity>,
+    val pictures : List<Picture>
+){
+    @Ignore
+    fun toDto(): Property {
+        return PropertyMapper().modelToDto(this)
+    }
+}
