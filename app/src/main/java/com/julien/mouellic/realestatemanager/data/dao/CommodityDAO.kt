@@ -23,6 +23,6 @@ interface CommodityDAO {
     @Query("SELECT * FROM commodities")
     suspend fun getAll(): List<CommodityDTO>
 
-    @Query("SELECT * FROM commodities WHERE commodity_id = :id")
+    @Query("SELECT * FROM commodities WHERE id = :id")
     suspend fun getById(id: Long): CommodityDTO?
 }

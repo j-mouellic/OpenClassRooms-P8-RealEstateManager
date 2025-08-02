@@ -25,7 +25,7 @@ interface RealEstateTypeDAO {
     @Query("SELECT * FROM real_estate_types")
     fun getAll(): Flow<List<RealEstateTypeDTO>>
 
-    @Query("SELECT * FROM real_estate_types WHERE real_estate_type_id = :id")
+    @Query("SELECT * FROM real_estate_types WHERE id = :id")
     suspend fun getById(id: Long): RealEstateTypeDTO?
 }
 

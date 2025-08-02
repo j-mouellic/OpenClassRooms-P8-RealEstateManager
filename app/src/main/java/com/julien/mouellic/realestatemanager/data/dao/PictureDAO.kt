@@ -28,9 +28,12 @@ interface PictureDAO {
     @Query("SELECT * FROM pictures")
     fun getAll(): Flow<List<PictureDTO>>
 
-    @Query("SELECT * FROM pictures WHERE picture_id = :id")
+    @Query("SELECT * FROM pictures WHERE id = :id")
     suspend fun getById(id: Long): PictureDTO?
 
     @Query("SELECT * FROM pictures WHERE property_id = :propertyId")
     fun getForProperty(propertyId: Long): Flow<List<PictureDTO>>
+
+    @Query("DELETE FROM pictures WHERE property_id = :propertyId")
+    suspend fun deleteByPropertyId(propertyId: Long)
 }

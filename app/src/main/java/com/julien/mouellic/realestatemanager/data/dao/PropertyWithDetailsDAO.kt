@@ -7,10 +7,10 @@ import com.julien.mouellic.realestatemanager.data.entity.PropertyWithDetailsDTO
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface FullPropertyDAO {
+interface PropertyWithDetailsDAO {
 
     @Transaction
-    @Query("SELECT * FROM properties WHERE property_id = :id")
+    @Query("SELECT * FROM properties WHERE id = :id")
     fun getByIdRT(id: Long): Flow<PropertyWithDetailsDTO?>
 
     @Transaction
@@ -18,7 +18,7 @@ interface FullPropertyDAO {
     fun getAllRT(): Flow<List<PropertyWithDetailsDTO>>
 
     @Transaction
-    @Query("SELECT * FROM properties WHERE property_id = :id")
+    @Query("SELECT * FROM properties WHERE id = :id")
     suspend fun getById(id: Long): PropertyWithDetailsDTO?
 
     @Transaction

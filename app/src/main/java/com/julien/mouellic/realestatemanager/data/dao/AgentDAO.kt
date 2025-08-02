@@ -13,6 +13,9 @@ interface AgentDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(agent: AgentDTO): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(agents: List<AgentDTO>): List<Long>
+
     @Update
     suspend fun update(agent: AgentDTO)
 
@@ -22,6 +25,6 @@ interface AgentDAO {
     @Query("SELECT * FROM agents")
     suspend fun getAllAgents(): List<AgentDTO>
 
-    @Query("SELECT * FROM agents WHERE agent_id = :id")
+    @Query("SELECT * FROM agents WHERE id = :id")
     suspend fun getAgentById(id: Long): AgentDTO?
 }
