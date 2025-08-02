@@ -17,7 +17,7 @@ interface AgentDAO {
     suspend fun insertAll(agents: List<AgentDTO>): List<Long>
 
     @Update
-    suspend fun update(agent: AgentDTO)
+    suspend fun update(agent: AgentDTO) :Int
 
     @Delete
     suspend fun delete(agent: AgentDTO)

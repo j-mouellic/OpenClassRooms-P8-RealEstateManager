@@ -15,7 +15,7 @@ interface CommodityDAO {
     suspend fun insert(commodity: CommodityDTO): Long
 
     @Update
-    suspend fun update(commodity: CommodityDTO)
+    suspend fun update(commodity: CommodityDTO) :Int
 
     @Delete
     suspend fun delete(commodity: CommodityDTO)
