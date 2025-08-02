@@ -12,7 +12,7 @@ import com.julien.mouellic.realestatemanager.domain.model.Commodity
 )
 data class CommodityDTO(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "commodity_id")
+    @ColumnInfo(name = "id")
     val id : Long? = 0,
 
     @ColumnInfo(name = "name")

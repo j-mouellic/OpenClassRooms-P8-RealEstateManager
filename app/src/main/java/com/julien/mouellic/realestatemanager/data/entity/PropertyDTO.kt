@@ -41,7 +41,7 @@ import org.threeten.bp.Instant
 data class PropertyDTO(
 
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "property_id")
+    @ColumnInfo(name = "id")
     val id: Long? = 0,
 
     @ColumnInfo(name = "name")

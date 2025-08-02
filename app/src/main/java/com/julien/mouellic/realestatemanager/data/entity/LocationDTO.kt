@@ -12,7 +12,7 @@ import com.julien.mouellic.realestatemanager.domain.model.Location
 )
 data class LocationDTO(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "location_id")
+    @ColumnInfo(name = "id")
     val id : Long? = 0,
 
     @ColumnInfo(name = "city")

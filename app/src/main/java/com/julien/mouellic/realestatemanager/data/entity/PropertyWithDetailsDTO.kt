@@ -29,8 +29,8 @@ data class PropertyWithDetailsDTO(
     val realEstateType: RealEstateTypeDTO?,
 
     @Relation(
-        parentColumn = "picture_id",
-        entityColumn = "id"
+        parentColumn = "id",
+        entityColumn = "property_id"
     )
     val pictures: List<PictureDTO>,
 

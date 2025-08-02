@@ -13,7 +13,7 @@ import com.julien.mouellic.realestatemanager.domain.model.Location
 )
 data class AgentDTO(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "agent_id")
+    @ColumnInfo(name = "id")
     val id : Long? = 0,
 
     @ColumnInfo(name = "first_name")

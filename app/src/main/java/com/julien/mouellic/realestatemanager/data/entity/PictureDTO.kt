@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.julien.mouellic.realestatemanager.data.mapper.PictureMapper
 import com.julien.mouellic.realestatemanager.domain.model.Picture
@@ -18,18 +19,19 @@ import com.julien.mouellic.realestatemanager.domain.model.Picture
             childColumns = ["property_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["property_id"])]
 )
 data class PictureDTO(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "picture_id")
+    @ColumnInfo(name = "id")
     val id : Long?,
 
     @ColumnInfo(name = "content")
-    val content : Bitmap,
+    val content : ByteArray,
 
     @ColumnInfo(name = "thumbnail_content")
-    val thumbnailContent : Bitmap,
+    val thumbnailContent : ByteArray,
 
     @ColumnInfo(name = "order")
     val order: Int,

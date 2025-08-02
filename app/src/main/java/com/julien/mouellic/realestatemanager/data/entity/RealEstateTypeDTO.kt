@@ -14,7 +14,7 @@ import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 )
 data class RealEstateTypeDTO(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "real_estate_type_id")
+    @ColumnInfo(name = "id")
     val id : Long? = 0,
 
     @ColumnInfo(name = "name")
