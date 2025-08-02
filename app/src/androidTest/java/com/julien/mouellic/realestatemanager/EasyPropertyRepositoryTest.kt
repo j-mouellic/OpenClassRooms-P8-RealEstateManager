@@ -1,255 +1,227 @@
 package com.julien.mouellic.realestatemanager
 
 import android.graphics.Bitmap
-import android.graphics.Bitmap.Config
+import org.threeten.bp.Instant
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.julien.mouellic.realestatemanager.data.AppDatabase
 import com.julien.mouellic.realestatemanager.data.dao.*
-import com.julien.mouellic.realestatemanager.data.entity.PropertyCommodityCrossRefDTO
-import com.julien.mouellic.realestatemanager.data.repository.EasyPropertyRepository
+import com.julien.mouellic.realestatemanager.data.repository.*
 import com.julien.mouellic.realestatemanager.domain.model.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.julien.mouellic.realestatemanager.domain.model.Property
+import com.julien.mouellic.realestatemanager.utils.BitmapUtils
+import junit.framework.TestCase.*
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.
-import org.mockito.Mockito.*
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import org.mockito.kotlin.times
-import org.threeten.bp.Instant
-import kotlin.test.assertFailsWith
+import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(AndroidJUnit4::class)
 class EasyPropertyRepositoryTest {
 
-    private lateinit var locationDAO: LocationDAO
+    private lateinit var agentDAO: AgentDAO
+    private lateinit var estateTypeDAO: RealEstateTypeDAO
     private lateinit var propertyDAO: PropertyDAO
+    private lateinit var locationDAO: LocationDAO
     private lateinit var pictureDAO: PictureDAO
     private lateinit var commodityDAO: CommodityDAO
     private lateinit var propertyCommodityCrossRefDAO: PropertyCommodityCrossRefDAO
-    private lateinit var repository: EasyPropertyRepository
+    private lateinit var propertyRepository: EasyPropertyRepository
+    private lateinit var agentRepository: AgentRepository
+    private lateinit var estateTypeRepository: RealEstateTypeRepository
+    private lateinit var roomDatabase: AppDatabase
 
-    private val sampleLocation = Location(
-        id = null,
-        street = "Main St",
-        streetNumber = 2,
-        postalCode = "75000",
-        city = "Paris",
-        country = "France",
-        longitude = null,
-        latitude = null
-    )
+    private val estateType = RealEstateType(id = 1, name = "Apartment")
+    private val agent = Agent(id = 1, firstName = "John", lastName = "Doe", email = "johndoe@example.com", phoneNumber = "123456789", realEstateAgency = "Nestenn")
 
-    private val sampleCommodity = Commodity(
-        id = null,
-        name = "Elevator"
-    )
-
-    private val samplePicture = Picture(
-        id = null,
-        content = Bitmap.createBitmap(1, 1, Config.ARGB_8888),
-        thumbnailContent = Bitmap.createBitmap(1, 1, Config.ARGB_8888),
-        order = 1
-    )
-
-    private val sampleProperty = Property(
-        id = null,
-        name = "Test Property",
-        description = null,
-        surface = null,
-        numbersOfRooms = null,
-        numbersOfBathrooms = null,
-        numbersOfBedrooms = null,
-        price = null,
-        isSold = false,
-        creationDate = Instant.now(),
-        entryDate = null,
-        saleDate = null,
-        apartmentNumber = null,
-        location = sampleLocation,
-        agent = null,
-        realEstateType = null,
-        commodities = listOf(sampleCommodity),
-        pictures = listOf(samplePicture)
-    )
+    private suspend fun insertAgentAndEstateType() {
+        agentRepository.insert(agent)
+        estateTypeRepository.insert(estateType)
+    }
 
     @Before
     fun setup() {
-        locationDAO = mock(LocationDAO::class.java)
-        propertyDAO = mock(PropertyDAO::class.java)
-        pictureDAO = mock(PictureDAO::class.java)
-        commodityDAO = mock(CommodityDAO::class.java)
-        propertyCommodityCrossRefDAO = mock(PropertyCommodityCrossRefDAO::class.java)
-        repository = EasyPropertyRepository(
-            locationDAO,
-            propertyDAO,
-            pictureDAO,
-            commodityDAO,
-            propertyCommodityCrossRefDAO
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        roomDatabase = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .setJournalMode(RoomDatabase.JournalMode.AUTOMATIC)
+            .build()
+        agentDAO = roomDatabase.agentDao()
+        estateTypeDAO = roomDatabase.realEstateTypeDao()
+        propertyDAO = roomDatabase.propertyDao()
+        locationDAO = roomDatabase.locationDao()
+        pictureDAO = roomDatabase.pictureDao()
+        commodityDAO = roomDatabase.commodityDao()
+        propertyCommodityCrossRefDAO = roomDatabase.propertyCommodityCrossRefDAO()
+        propertyRepository = EasyPropertyRepository(
+            locationDAO, propertyDAO, pictureDAO, commodityDAO, propertyCommodityCrossRefDAO
         )
+        agentRepository = AgentRepository(agentDAO)
+        estateTypeRepository = RealEstateTypeRepository(estateTypeDAO)
+    }
+
+    @After
+    fun tearDown() {
+        roomDatabase.close()
     }
 
     @Test
-    fun `insert inserts location if not exists, inserts property, commodities, pictures, cleans unused`() = runTest {
-        // locationDAO.search retourne null => location insertée
-        whenever(locationDAO.search(
-            sampleLocation.street,
-            sampleLocation.streetNumber,
-            sampleLocation.postalCode,
-            sampleLocation.city,
-            sampleLocation.country ?: ""
-        )).thenReturn(null)
-
-        whenever(locationDAO.insert(any())).thenReturn(10L)
-        whenever(propertyDAO.insert(any())).thenReturn(20L)
-        whenever(commodityDAO.insert(any())).thenReturn(30L)
-        whenever(pictureDAO.insert(any())).thenReturn(40L)
-
-        val propertyId = repository.insert(sampleProperty)
-
-        // locationDAO.search appelé
-        verify(locationDAO).search(
-            sampleLocation.street,
-            sampleLocation.streetNumber,
-            sampleLocation.postalCode,
-            sampleLocation.city,
-            sampleLocation.country ?: ""
+    fun insertAndGetProperty() = runTest {
+        insertAgentAndEstateType()
+        val property =  com.julien.mouellic.realestatemanager.domain.model.Property(
+            id = null,
+            name = "Beautiful property",
+            description = "Beautiful property",
+            surface = 75.0,
+            numbersOfRooms = 3,
+            numbersOfBathrooms = 2,
+            numbersOfBedrooms = 2,
+            price = 250000.0,
+            isSold = false,
+            creationDate = Instant.now(),
+            entryDate = Instant.now(),
+            saleDate = null,
+            apartmentNumber = 101,
+            realEstateType = estateType,
+            location = Location(
+                id = null, street = "Main Street", streetNumber = 123, postalCode = "75001",
+                city = "Paris", country = "France", longitude = 2.3522, latitude = 48.8566
+            ),
+            agent = agent,
+            commodities = listOf(
+                Commodity(id = null, name = "Pool"),
+                Commodity(id = null, name = "Garden")
+            ),
+            pictures = listOf(
+                Picture(id = null, content = BitmapUtils.create(100,100), thumbnailContent = BitmapUtils.create(100,100), order = 1)
+            )
         )
 
-        // locationDAO.insert appelé
-        verify(locationDAO).insert(any())
+        val propertyId = propertyRepository.insert(property)
+        assertTrue(propertyId > 0)
 
-        // propertyDAO.insert appelé avec la location mise à jour (id=10L)
-        val propertyCaptor = argumentCaptor<com.julien.mouellic.realestatemanager.data.entity.PropertyDTO>()
-        verify(propertyDAO).insert(propertyCaptor.capture())
-        assert(propertyCaptor.firstValue.locationId == 10L)
-
-        // commodityDAO.insert appelé
-        verify(commodityDAO).insert(any())
-
-        // propertyCommodityCrossRefDAO.insert appelé avec les bons ids
-        val crossRefCaptor = argumentCaptor<PropertyCommodityCrossRefDTO>()
-        verify(propertyCommodityCrossRefDAO).insert(crossRefCaptor.capture())
-        assert(crossRefCaptor.firstValue.propertyId == propertyId)
-        assert(crossRefCaptor.firstValue.commodityId == 30L)
-
-        // pictureDAO.insert appelé
-        verify(pictureDAO).insert(any())
-
-        // nettoyage
-        verify(locationDAO).deleteUnused()
-        verify(pictureDAO).deleteUnused()
-
-        // propertyId retourné doit être celui renvoyé par propertyDAO.insert
-        assert(propertyId == 20L)
+        val propertyFromDb = propertyDAO.getById(propertyId)
+        assertNotNull(propertyFromDb)
+        assertEquals(property.description, propertyFromDb?.description)
+        assertEquals(property.surface, propertyFromDb?.surface)
     }
 
     @Test
-    fun `insert reuses existing location id if found`() = runTest {
-        whenever(locationDAO.search(
-            sampleLocation.street,
-            sampleLocation.streetNumber,
-            sampleLocation.postalCode,
-            sampleLocation.city,
-            sampleLocation.country ?: ""
-        )).thenReturn(55L)
-
-        whenever(propertyDAO.insert(any())).thenReturn(77L)
-        whenever(commodityDAO.insert(any())).thenReturn(88L)
-        whenever(pictureDAO.insert(any())).thenReturn(99L)
-
-        val id = repository.insert(sampleProperty)
-
-        // locationDAO.insert NE doit PAS être appelé ici car location trouvée
-        verify(locationDAO, never()).insert(any())
-
-        // propertyDAO.insert doit être appelé avec locationId=55L
-        val captor = argumentCaptor<com.julien.mouellic.realestatemanager.data.entity.PropertyDTO>()
-        verify(propertyDAO).insert(captor.capture())
-        assert(captor.firstValue.locationId == 55L)
-
-        assert(id == 77L)
-    }
-
-    @Test
-    fun `update throws if property id is null`() = runTest {
-        val propWithoutId = sampleProperty.copy(id = null)
-        assertFailsWith<IllegalArgumentException> {
-            runTest {
-                repository.update(propWithoutId)
-            }
-        }
-    }
-
-    @Test
-    fun `update inserts or reuses location, updates property, replaces commodities and pictures, cleans unused`() = runTest {
-        val propWithId = sampleProperty.copy(id = 100L)
-        whenever(locationDAO.search(
-            sampleLocation.street,
-            sampleLocation.streetNumber,
-            sampleLocation.postalCode,
-            sampleLocation.city,
-            sampleLocation.country ?: ""
-        )).thenReturn(null)
-        whenever(locationDAO.insert(any())).thenReturn(15L)
-
-        // Stub propertyDAO.update
-        doNothing().`when`(propertyDAO).update(any())
-
-        // Stub deletes and inserts cross ref, picture
-        doNothing().`when`(propertyCommodityCrossRefDAO).deleteByPropertyId(any())
-        doNothing().`when`(propertyCommodityCrossRefDAO).insert(any())
-        doNothing().`when`(pictureDAO).deleteByPropertyId(any())
-        doNothing().`when`(pictureDAO).insert(any())
-
-        // Stub cleanup
-        doNothing().`when`(locationDAO).deleteUnused()
-        doNothing().`when`(pictureDAO).deleteUnused()
-
-        repository.update(propWithId)
-
-        verify(locationDAO).search(
-            sampleLocation.street,
-            sampleLocation.streetNumber,
-            sampleLocation.postalCode,
-            sampleLocation.city,
-            sampleLocation.country ?: ""
+    fun updateProperty() = runTest {
+        insertAgentAndEstateType()
+        val property = Property(
+            id = null,
+            name = "Beautiful property",
+            description = "Beautiful property",
+            surface = 75.0,
+            numbersOfRooms = 3,
+            numbersOfBathrooms = 2,
+            numbersOfBedrooms = 2,
+            price = 250000.0,
+            isSold = false,
+            creationDate = Instant.now(),
+            entryDate = Instant.now(),
+            saleDate = null,
+            apartmentNumber = 101,
+            realEstateType = estateType,
+            location = Location(
+                id = null, street = "Main Street", streetNumber = 123, postalCode = "75001",
+                city = "Paris", country = "France", longitude = 2.3522, latitude = 48.8566
+            ),
+            agent = agent,
+            commodities = listOf(
+                Commodity(id = null, name = "Pool"),
+                Commodity(id = null, name = "Garden")
+            ),
+            pictures = listOf(
+                Picture(id = null, content = BitmapUtils.create(100,100), thumbnailContent = BitmapUtils.create(100,100), order = 1)
+            )
         )
-        verify(locationDAO).insert(any())
-        verify(propertyDAO).update(any())
-        verify(propertyCommodityCrossRefDAO).deleteByPropertyId(100L)
-        verify(propertyCommodityCrossRefDAO).insert(any())
-        verify(pictureDAO).deleteByPropertyId(100L)
-        verify(pictureDAO).insert(any())
-        verify(locationDAO).deleteUnused()
-        verify(pictureDAO).deleteUnused()
+
+        val propertyId = propertyRepository.insert(property)
+        assertTrue(propertyId > 0)
+
+        val updatedProperty = property.copy(id = propertyId, description = "Updated property description")
+        propertyRepository.update(updatedProperty)
+
+        val propertyFromDb = propertyDAO.getById(propertyId)
+        assertNotNull(propertyFromDb)
+        assertEquals(updatedProperty.description, propertyFromDb?.description)
     }
 
     @Test
-    fun `delete throws if property id is null`() = runTest {
-        val propWithoutId = sampleProperty.copy(id = null)
-        assertFailsWith<IllegalArgumentException> {
-            runTest {
-                repository.delete(propWithoutId)
-            }
-        }
+    fun deleteProperty() = runTest {
+        insertAgentAndEstateType()
+        val property = Property(
+            id = null,
+            name = "Beautiful property",
+            description = "Beautiful property",
+            surface = 75.0,
+            numbersOfRooms = 3,
+            numbersOfBathrooms = 2,
+            numbersOfBedrooms = 2,
+            price = 250000.0,
+            isSold = false,
+            creationDate = Instant.now(),
+            entryDate = Instant.now(),
+            saleDate = null,
+            apartmentNumber = 101,
+            realEstateType = estateType,
+            location = Location(
+                id = null, street = "Main Street", streetNumber = 123, postalCode = "75001",
+                city = "Paris", country = "France", longitude = 2.3522, latitude = 48.8566
+            ),
+            agent = agent,
+            commodities = listOf(
+                Commodity(id = null, name = "Pool"),
+                Commodity(id = null, name = "Garden")
+            ),
+            pictures = listOf(
+                Picture(id = null, content = BitmapUtils.create(100,100), thumbnailContent = BitmapUtils.create(100,100), order = 1)
+            )
+        )
+
+        val propertyId = propertyRepository.insert(property)
+        assertTrue(propertyId > 0)
+
+        propertyRepository.delete(property.copy(id = propertyId))
+
+        val propertyFromDb = propertyDAO.getById(propertyId)
+        assertNull(propertyFromDb)
     }
 
     @Test
-    fun `delete removes cross refs, pictures, property, cleans unused`() = runTest {
-        val propWithId = sampleProperty.copy(id = 200L)
-        doNothing().`when`(propertyCommodityCrossRefDAO).deleteByPropertyId(any())
-        doNothing().`when`(pictureDAO).deleteByPropertyId(any())
-        doNothing().`when`(propertyDAO).deleteById(any())
-        doNothing().`when`(locationDAO).deleteUnused()
-        doNothing().`when`(pictureDAO).deleteUnused()
+    fun insertAndGetAllProperties() = runTest {
+        insertAgentAndEstateType()
+        val property1 = Property(
+            id = null,
+            name = "Beautiful property",
+            description = "Beautiful property",
+            surface = 75.0,
+            numbersOfRooms = 3,
+            numbersOfBathrooms = 2,
+            numbersOfBedrooms = 2,
+            price = 250000.0,
+            isSold = false,
+            creationDate = Instant.now(),
+            entryDate = Instant.now(),
+            saleDate = null,
+            apartmentNumber = 101,
+            realEstateType = estateType,
+            location = Location(id = null, street = "Main Street", streetNumber = 123, postalCode = "75001", city = "Paris", country = "France", longitude = 2.3522, latitude = 48.8566),
+            agent = agent,
+            commodities = listOf(Commodity(id = null, name = "Pool")),
+            pictures = listOf(Picture(id = null, content = BitmapUtils.create(100,100), thumbnailContent = BitmapUtils.create(100,100), order = 1))
+        )
 
-        repository.delete(propWithId)
+        val property2 = property1.copy(description = "Beautiful property 2")
 
-        verify(propertyCommodityCrossRefDAO).deleteByPropertyId(200L)
-        verify(pictureDAO).deleteByPropertyId(200L)
-        verify(propertyDAO).deleteById(200L)
-        verify(locationDAO).deleteUnused()
-        verify(pictureDAO).deleteUnused()
+        propertyRepository.insert(property1)
+        propertyRepository.insert(property2)
+        val allProperties = propertyDAO.getAll()
+        assertEquals(2, allProperties.size)
     }
 }

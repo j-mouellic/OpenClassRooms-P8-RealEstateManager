@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.julien.mouellic.realestatemanager" />
+                  <option name="mobileSdkAppId" value="1:839626280773:android:c1094d605056a14c8db82c" />
+                  <option name="projectId" value="realestatemanager-d894c" />
+                  <option name="projectNumber" value="839626280773" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

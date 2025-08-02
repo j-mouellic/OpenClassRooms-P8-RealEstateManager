@@ -57,7 +57,7 @@ class CommodityRepository @Inject constructor(private val commodityDAO: Commodit
     /** GET BY ID **/
     @WorkerThread
     suspend fun getById(id: Long): Commodity? {
-        return commodityDAO.getCommodityById(id)?.toModel()
+        return commodityDAO.getById(id)?.toModel()
     }
 
     @WorkerThread
@@ -72,7 +72,7 @@ class CommodityRepository @Inject constructor(private val commodityDAO: Commodit
     /** GET ALL **/
     @WorkerThread
     suspend fun getAll(): List<Commodity> {
-        return commodityDAO.getAllCommodities().map { it.toModel() }
+        return commodityDAO.getAll().map { it.toModel() }
     }
 
     @WorkerThread

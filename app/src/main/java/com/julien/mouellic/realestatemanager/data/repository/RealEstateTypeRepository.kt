@@ -59,7 +59,7 @@ class RealEstateTypeRepository @Inject constructor(private val realEstateTypeDAO
     /** GET BY ID **/
     @WorkerThread
     suspend fun getById(id: Long): RealEstateType? {
-        return realEstateTypeDAO.getRealEstateTypeById(id)?.toModel()
+        return realEstateTypeDAO.getById(id)?.toModel()
     }
 
     @WorkerThread
@@ -73,6 +73,6 @@ class RealEstateTypeRepository @Inject constructor(private val realEstateTypeDAO
 
     /** GET ALL (as Flow) **/
     fun getAll(): Flow<List<RealEstateType>> {
-        return realEstateTypeDAO.getAllRealEstateTypes().map { list -> list.map { it.toModel() } }
+        return realEstateTypeDAO.getAll().map { list -> list.map { it.toModel() } }
     }
 }

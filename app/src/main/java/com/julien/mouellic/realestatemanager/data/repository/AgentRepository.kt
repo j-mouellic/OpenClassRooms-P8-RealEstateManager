@@ -14,6 +14,11 @@ class AgentRepository @Inject constructor(private val agentDAO: AgentDAO) {
     }
 
     @WorkerThread
+    suspend fun insertAll(agents: List<Agent>): List<Long> {
+        return agentDAO.insertAll(agents.map { it.toDTO() })
+    }
+
+    @WorkerThread
     suspend fun insertAsResult(agent: Agent): Result<Long> {
         return try {
             Result.success(insert(agent))

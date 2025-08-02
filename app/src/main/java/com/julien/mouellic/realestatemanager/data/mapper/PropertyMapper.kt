@@ -22,7 +22,7 @@ class PropertyMapper {
             apartmentNumber = property.apartmentNumber,
             agentId = property.agent?.id,
             locationId = property.location?.id,
-            realEstateType = property.realEstateType?.id,
+            realEstateTypeId = property.realEstateType?.id,
         )
     }
 

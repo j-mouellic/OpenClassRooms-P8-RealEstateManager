@@ -8,6 +8,8 @@ plugins {
     id("kotlin-kapt")
 }
 
+val MAPS_API_KEY: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
+
 android {
     namespace = "com.julien.mouellic.realestatemanager"
     compileSdk = 35
@@ -18,6 +20,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        resValue("string", "google_maps_key", MAPS_API_KEY)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

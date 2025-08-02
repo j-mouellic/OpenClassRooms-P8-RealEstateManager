@@ -12,7 +12,7 @@ class LocationMapper {
             postalCode = location.postalCode,
             street = location.street,
             streetNumber = location.streetNumber,
-            country = location.country,
+            country =  location.country ?: "",
             longitude = location.longitude,
             latitude = location.latitude,
         )

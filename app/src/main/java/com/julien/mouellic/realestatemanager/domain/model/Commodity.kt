@@ -5,7 +5,7 @@ import com.julien.mouellic.realestatemanager.data.entity.CommodityDTO
 import com.julien.mouellic.realestatemanager.data.mapper.CommodityMapper
 
 data class Commodity(
-    val id: Long,
+    val id: Long?,
     val name: String,
 ){
     @Ignore

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "839626280773",
+    "project_id": "realestatemanager-d894c",
+    "storage_bucket": "realestatemanager-d894c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839626280773:android:c1094d605056a14c8db82c",
+        "android_client_info": {
+          "package_name": "com.julien.mouellic.realestatemanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa6RlTZyd2yqZbzwZZL-OFQvhQC9KGReM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

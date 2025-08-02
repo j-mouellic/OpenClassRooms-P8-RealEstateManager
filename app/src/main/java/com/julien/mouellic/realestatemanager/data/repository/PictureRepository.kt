@@ -11,14 +11,14 @@ class PictureRepository @Inject constructor(private val pictureDAO: PictureDAO) 
 
     /** INSERT **/
     @WorkerThread
-    suspend fun insert(picture: Picture): Long {
-        return pictureDAO.insert(picture.toDTO())
+    suspend fun insert(picture: Picture, propertyId : Long): Long {
+        return pictureDAO.insert(picture.toDTO(propertyId))
     }
 
     @WorkerThread
-    suspend fun insertAsResult(picture: Picture): Result<Long> {
+    suspend fun insertAsResult(picture: Picture, propertyId : Long): Result<Long> {
         return try {
-            Result.success(insert(picture))
+            Result.success(insert(picture, propertyId))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -26,14 +26,14 @@ class PictureRepository @Inject constructor(private val pictureDAO: PictureDAO) 
 
     /** UPDATE **/
     @WorkerThread
-    suspend fun update(picture: Picture) {
-        pictureDAO.update(picture.toDTO())
+    suspend fun update(picture: Picture, propertyId : Long) {
+        pictureDAO.update(picture.toDTO(propertyId))
     }
 
     @WorkerThread
-    suspend fun updateAsResult(picture: Picture): Result<Unit> {
+    suspend fun updateAsResult(picture: Picture, propertyId : Long): Result<Unit> {
         return try {
-            update(picture)
+            update(picture, propertyId)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -42,14 +42,14 @@ class PictureRepository @Inject constructor(private val pictureDAO: PictureDAO) 
 
     /** DELETE **/
     @WorkerThread
-    suspend fun delete(picture: Picture) {
-        pictureDAO.delete(picture.toDTO())
+    suspend fun delete(picture: Picture, propertyId :Long) {
+        pictureDAO.delete(picture.toDTO(propertyId))
     }
 
     @WorkerThread
-    suspend fun deleteAsResult(picture: Picture): Result<Unit> {
+    suspend fun deleteAsResult(picture: Picture, propertyId :Long): Result<Unit> {
         return try {
-            delete(picture)
+            delete(picture, propertyId)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -59,7 +59,7 @@ class PictureRepository @Inject constructor(private val pictureDAO: PictureDAO) 
     /** GET BY ID **/
     @WorkerThread
     suspend fun getById(id: Long): Picture? {
-        return pictureDAO.getPictureById(id)?.toModel()
+        return pictureDAO.getById(id)?.toModel()
     }
 
     @WorkerThread
@@ -73,12 +73,12 @@ class PictureRepository @Inject constructor(private val pictureDAO: PictureDAO) 
 
     /** GET ALL (as Flow) **/
     fun getAll(): Flow<List<Picture>> {
-        return pictureDAO.getAllPictures().map { list -> list.map { it.toModel() } }
+        return pictureDAO.getAll().map { list -> list.map { it.toModel() } }
     }
 
 
     /** GET PICTURES FOR PROPERTY (as Flow) **/
     fun getPicturesForProperty(propertyId: Long): Flow<List<Picture>> {
-        return pictureDAO.getPicturesForProperty(propertyId).map { list -> list.map { it.toModel() } }
+        return pictureDAO.getForProperty(propertyId).map { list -> list.map { it.toModel() } }
     }
 }

@@ -41,6 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun realEstateTypeDao(): RealEstateTypeDAO
     abstract fun commodityDao(): CommodityDAO
     abstract fun pictureDao(): PictureDAO
+    abstract fun propertyWithDetailsDao(): PropertyWithDetailsDAO
     abstract fun propertyCommodityCrossRefDAO(): PropertyCommodityCrossRefDAO
 
     private class AppDatabaseCallback(

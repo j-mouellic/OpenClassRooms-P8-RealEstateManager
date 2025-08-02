@@ -57,7 +57,7 @@ class LocationRepository @Inject constructor(private val locationDAO: LocationDA
     /** GET BY ID **/
     @WorkerThread
     suspend fun getById(id: Long): Location? {
-        return locationDAO.getLocationById(id)?.toModel()
+        return locationDAO.getById(id)?.toModel()
     }
 
     @WorkerThread
@@ -72,7 +72,7 @@ class LocationRepository @Inject constructor(private val locationDAO: LocationDA
     /** GET ALL **/
     @WorkerThread
     suspend fun getAll(): List<Location> {
-        return locationDAO.getAllLocations().map { it.toModel() }
+        return locationDAO.getAll().map { it.toModel() }
     }
 
     @WorkerThread
