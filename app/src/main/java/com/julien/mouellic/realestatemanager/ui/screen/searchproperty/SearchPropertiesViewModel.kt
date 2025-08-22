@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.ui.screen.searchproperty
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.julien.mouellic.realestatemanager.domain.usecase.property.SearchPropertiesUseCase
@@ -8,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "SearchPropertiesVM"
 
 @HiltViewModel
 class SearchPropertiesViewModel @Inject constructor(
@@ -29,6 +32,8 @@ class SearchPropertiesViewModel @Inject constructor(
 
     fun searchProperties() {
         val searchProperties = getSearchProperties()
+        Log.d(TAG, "searchProperties() called with filters: $searchProperties")
+
         _uiState.value = SearchPropertiesUIState.IsLoading(searchProperties)
 
         viewModelScope.launch {
@@ -44,8 +49,10 @@ class SearchPropertiesViewModel @Inject constructor(
                     isAvailable = searchProperties.isAvailable,
                     commodities = searchProperties.commodities
                 )
+                Log.d(TAG, "Found ${properties.size} properties")
                 _uiState.value = SearchPropertiesUIState.Success(properties, searchProperties)
             } catch (exception: Exception) {
+                Log.e(TAG, "Error fetching properties: ${exception.message}", exception)
                 _uiState.value = SearchPropertiesUIState.Error(exception.message, searchProperties)
             }
         }
@@ -53,6 +60,8 @@ class SearchPropertiesViewModel @Inject constructor(
 
     fun updateSearchProperties(update: SearchPropertiesUIState.SearchProperties.() -> SearchPropertiesUIState.SearchProperties) {
         val current = getSearchProperties()
-        _uiState.value = SearchPropertiesUIState.IsLoading(current.update())
+        val updated = current.update()
+        Log.d(TAG, "updateSearchProperties() called, new filters: $updated")
+        _uiState.value = SearchPropertiesUIState.IsLoading(updated)
     }
 }
