@@ -1,0 +1,58 @@
+package com.julien.mouellic.realestatemanager.ui.screen.searchproperty
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.julien.mouellic.realestatemanager.domain.usecase.property.SearchPropertiesUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class SearchPropertiesViewModel @Inject constructor(
+    private val searchPropertiesUseCase: SearchPropertiesUseCase
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<SearchPropertiesUIState>(
+        SearchPropertiesUIState.IsLoading(SearchPropertiesUIState.SearchProperties())
+    )
+    val uiState: StateFlow<SearchPropertiesUIState> = _uiState
+
+    private fun getSearchProperties(): SearchPropertiesUIState.SearchProperties {
+        return when (val uiState = _uiState.value) {
+            is SearchPropertiesUIState.IsLoading -> uiState.searchProperties
+            is SearchPropertiesUIState.Success -> uiState.searchProperties
+            is SearchPropertiesUIState.Error -> uiState.searchProperties
+        }
+    }
+
+    fun searchProperties() {
+        val searchProperties = getSearchProperties()
+        _uiState.value = SearchPropertiesUIState.IsLoading(searchProperties)
+
+        viewModelScope.launch {
+            try {
+                val properties = searchPropertiesUseCase(
+                    type = searchProperties.type,
+                    minPrice = searchProperties.minPrice,
+                    maxPrice = searchProperties.maxPrice,
+                    minSurface = searchProperties.minSurface,
+                    maxSurface = searchProperties.maxSurface,
+                    minNbRooms = searchProperties.minNbRooms,
+                    maxNbRooms = searchProperties.maxNbRooms,
+                    isAvailable = searchProperties.isAvailable,
+                    commodities = searchProperties.commodities
+                )
+                _uiState.value = SearchPropertiesUIState.Success(properties, searchProperties)
+            } catch (exception: Exception) {
+                _uiState.value = SearchPropertiesUIState.Error(exception.message, searchProperties)
+            }
+        }
+    }
+
+    fun updateSearchProperties(update: SearchPropertiesUIState.SearchProperties.() -> SearchPropertiesUIState.SearchProperties) {
+        val current = getSearchProperties()
+        _uiState.value = SearchPropertiesUIState.IsLoading(current.update())
+    }
+}
