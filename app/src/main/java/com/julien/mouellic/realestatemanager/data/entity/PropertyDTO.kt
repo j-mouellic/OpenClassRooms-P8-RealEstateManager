@@ -42,7 +42,7 @@ data class PropertyDTO(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Long? = 0,
+    val id: Long? = null,
 
     @ColumnInfo(name = "name")
     val name: String,
