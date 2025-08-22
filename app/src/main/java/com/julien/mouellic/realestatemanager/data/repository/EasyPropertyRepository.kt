@@ -31,7 +31,12 @@ class EasyPropertyRepository @Inject constructor(
         }
         val propertyId = propertyDAO.insert(propertyCopy.toDTO())
         propertyCopy.commodities.forEach { commodity ->
-            val commodityId = commodityDAO.insert(commodity.toDTO())
+            val commodityId = if (commodity.id != null) {
+                val existing = commodityDAO.getById(commodity.id)
+                existing?.id ?: commodityDAO.insert(commodity.toDTO())
+            } else {
+                commodityDAO.insert(commodity.toDTO())
+            }
             propertyCommodityCrossRefDAO.insert(PropertyCommodityCrossRefDTO(propertyId, commodityId))
         }
         propertyCopy.pictures.sortedBy { it.order }.forEachIndexed { index, picture ->

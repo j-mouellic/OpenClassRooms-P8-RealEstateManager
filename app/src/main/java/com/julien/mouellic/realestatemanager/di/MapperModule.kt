@@ -13,5 +13,18 @@ class MapperModule {
     @Provides
     fun provideAgentMapper() = AgentMapper()
 
-    // TODO : ajouter mapper
+    @Provides
+    fun provideCommodityMapper() = CommodityMapper()
+
+    @Provides
+    fun providePictureMapper() = PictureMapper()
+
+    @Provides
+    fun providePropertyMapper() = PropertyMapper()
+
+    @Provides
+    fun providePropertyWithDetailsMapper() = PropertyWithDetailsMapper()
+
+    @Provides
+    fun provideRealEstateTypeMapper() = RealEstateTypeMapper()
 }

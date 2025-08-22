@@ -29,6 +29,37 @@ fun ImageSelector(
     if (uiState.pictures.isNotEmpty()) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             uiState.pictures.forEach { picture ->
+                picture.thumbnailContent?.let { bitmap ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Image(
+                            bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(200.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(60.dp)
+                        ) {
+                            Button(onClick = { onMoveUp(picture) }) { Text("+") }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = { onMoveDown(picture) }) { Text("-") }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = { onDelete(picture) }) { Text("x") }
+                        }
+                    }
+                }
+            }
+
+            /*uiState.pictures.forEach { picture ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -61,7 +92,7 @@ fun ImageSelector(
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 }
