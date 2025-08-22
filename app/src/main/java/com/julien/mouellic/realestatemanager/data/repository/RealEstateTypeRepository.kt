@@ -2,10 +2,12 @@ package com.julien.mouellic.realestatemanager.data.repository
 
 import androidx.annotation.WorkerThread
 import com.julien.mouellic.realestatemanager.data.dao.RealEstateTypeDAO
+import com.julien.mouellic.realestatemanager.domain.model.Agent
 import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.collections.map
 
 class RealEstateTypeRepository @Inject constructor(private val realEstateTypeDAO: RealEstateTypeDAO) {
 
@@ -71,8 +73,14 @@ class RealEstateTypeRepository @Inject constructor(private val realEstateTypeDAO
         }
     }
 
+    /** GET ALL **/
+    @WorkerThread
+    suspend fun getAll(): List<RealEstateType> {
+        return realEstateTypeDAO.getAll().map { it.toModel() }
+    }
+
     /** GET ALL (as Flow) **/
-    fun getAll(): Flow<List<RealEstateType>> {
-        return realEstateTypeDAO.getAll().map { list -> list.map { it.toModel() } }
+    fun getAllAsFlow(): Flow<List<RealEstateType>> {
+        return realEstateTypeDAO.getAllAsFlow().map { list -> list.map { it.toModel() } }
     }
 }

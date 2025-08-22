@@ -23,7 +23,10 @@ interface RealEstateTypeDAO {
     suspend fun delete(realEstateType: RealEstateTypeDTO)
 
     @Query("SELECT * FROM real_estate_types")
-    fun getAll(): Flow<List<RealEstateTypeDTO>>
+    fun getAllAsFlow(): Flow<List<RealEstateTypeDTO>>
+
+    @Query("SELECT * FROM real_estate_types")
+    suspend fun getAll(): List<RealEstateTypeDTO>
 
     @Query("SELECT * FROM real_estate_types WHERE id = :id")
     suspend fun getById(id: Long): RealEstateTypeDTO?
