@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,7 +10,8 @@ plugins {
     id("kotlin-kapt")
 }
 
-val MAPS_API_KEY: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
+val properties = Properties()
+properties.load(rootProject.file("local.properties").inputStream())
 
 android {
     namespace = "com.julien.mouellic.realestatemanager"
@@ -20,8 +23,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
-        resValue("string", "google_maps_key", MAPS_API_KEY)
+        manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

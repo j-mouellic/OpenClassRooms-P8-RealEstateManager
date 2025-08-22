@@ -1,5 +1,7 @@
 package com.julien.mouellic.realestatemanager.ui.app
 
+import android.provider.Settings.Global.getString
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavHostController
+import com.julien.mouellic.realestatemanager.R
 import androidx.navigation.compose.rememberNavController
 import com.julien.mouellic.realestatemanager.ui.navigation.PropertyNavHost
 
