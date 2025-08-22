@@ -12,11 +12,10 @@ import com.julien.mouellic.realestatemanager.domain.model.Picture
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.domain.usecase.agent.GetAllAgentsUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.commodity.GetAllCommoditiesUseCase
-import com.julien.mouellic.realestatemanager.domain.usecase.estatetype.GetAllEstateTypesUseCase
-import com.julien.mouellic.realestatemanager.domain.usecase.property.GetFullPropertyUseCase
+import com.julien.mouellic.realestatemanager.domain.usecase.realestatetype.GetAllEstateTypesUseCase
+import com.julien.mouellic.realestatemanager.domain.usecase.property.GetPropertyWithDetailsUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.property.InsertEasyPropertyUseCase
-import com.julien.mouellic.realestatemanager.domain.usecase.property.InsertPropertyUseCase
-import com.julien.mouellic.realestatemanager.domain.usecase.property.UpdatePropertyUseCase
+import com.julien.mouellic.realestatemanager.domain.usecase.property.UpdateEasyPropertyUseCase
 import com.julien.mouellic.realestatemanager.ui.form.converter.FormConverter
 import com.julien.mouellic.realestatemanager.ui.form.formater.FormFormater
 import com.julien.mouellic.realestatemanager.ui.form.state.FieldState
@@ -301,20 +300,20 @@ class CreatePropertyViewModel @Inject constructor(
                     name = currentState.name.value,
                     description = formConverter.toString(currentState.description.value),
                     surface = formConverter.toDouble(currentState.surface.value),
-                    nbRooms = formConverter.toInt(currentState.nbRooms.value),
-                    nbBathrooms = formConverter.toInt(currentState.nbBathrooms.value),
-                    nbBedrooms = formConverter.toInt(currentState.nbBedrooms.value),
+                    numbersOfRooms = formConverter.toInt(currentState.nbRooms.value),
+                    numbersOfBathrooms = formConverter.toInt(currentState.nbBathrooms.value),
+                    numbersOfBedrooms = formConverter.toInt(currentState.nbBedrooms.value),
                     price = formConverter.toDouble(currentState.price.value),
                     isSold = false,
                     creationDate = Instant.now(),
                     entryDate = currentState.entryDate.value,
                     saleDate = currentState.saleDate.value,
                     apartmentNumber = formConverter.toInt(currentState.apartmentNumber.value),
-                    type = currentState.selectedEstateType!!,
+                    realEstateType = currentState.selectedEstateType!!,
                     location = Location(
                         id = null,
                         street = currentState.location.street.value,
-                        number = formConverter.toInt(currentState.location.number.value),
+                        streetNumber = formConverter.toInt(currentState.location.number.value),
                         postalCode = currentState.location.postalCode.value,
                         city = currentState.location.city.value,
                         country = currentState.location.country.value,
@@ -348,7 +347,6 @@ class CreatePropertyViewModel @Inject constructor(
             val newPictures = bitmaps.mapIndexed { index, bitmap ->
                 Picture(
                     id = null,
-                    description = null,
                     content = BitmapUtils.resize(
                         bitmap,
                         CONTENT_MAX_WIDTH,
@@ -388,17 +386,16 @@ class CreatePropertyViewModel @Inject constructor(
         val currentState = getFormState()
         val pictures = currentState.pictures.map {
             val content = it.content
-            val description : String = content.width.toString() + "x" + content.height.toString()
+            val description : String = content?.width.toString() + "x" + content?.height.toString()
             Picture(
                 id = it.id,
-                description = description,
                 content = BitmapUtils.create(1, 1),
                 thumbnailContent = BitmapUtils.create(1, 1),
                 order = it.order
             )
         }
         for(picture in pictures){
-            Log.d(TAG, "Picture: ${picture.description} - Order: ${picture.order}")
+            Log.d(TAG, "Picture Order: ${picture.order}")
         }
     }
 
@@ -445,7 +442,7 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
-    fun updateSelectedEstateType(it: EstateType) {
+    fun updateSelectedEstateType(it: RealEstateType) {
         viewModelScope.launch {
             var currentState = getFormState()
             currentState = currentState.copy(selectedEstateType = it)
@@ -469,16 +466,16 @@ class CreatePropertyViewModel @Inject constructor(
             editModeIDLoaded = propertyId
             viewModelScope.launch {
                 _uiState.value = CreatePropertyUIState.IsLoading(formState = getFormState())
-                val property = getFullPropertyUseCase(propertyId)
+                val property = getPropertyWithDetailsUseCase(propertyId)
                 if (property != null) {
                     val location : LocationFormState? = if (property.location != null){
                         val propertyLocation = property.location
                         LocationFormState(
                             street = FieldState(propertyLocation.street, true),
-                            number = FieldState(formFormater.formatInt(propertyLocation.number), true),
+                            number = FieldState(formFormater.formatInt(propertyLocation.streetNumber), true),
                             postalCode = FieldState(propertyLocation.postalCode, true),
                             city = FieldState(propertyLocation.city, true),
-                            country = FieldState(propertyLocation.country, true),
+                            country = FieldState(propertyLocation.country ?: "", true),
                             longitude = FieldState(formFormater.formatDouble(propertyLocation.longitude), true),
                             latitude = FieldState(formFormater.formatDouble(propertyLocation.latitude), true)
                         )
@@ -490,16 +487,16 @@ class CreatePropertyViewModel @Inject constructor(
                         name = FieldState(property.name, true),
                         description = FieldState(formFormater.formatString(property.description), true),
                         surface = FieldState(formFormater.formatDouble(property.surface), true),
-                        nbRooms = FieldState(formFormater.formatInt(property.nbRooms), true),
-                        nbBathrooms = FieldState(formFormater.formatInt(property.nbBathrooms), true),
-                        nbBedrooms = FieldState(formFormater.formatInt(property.nbBedrooms), true),
+                        nbRooms = FieldState(formFormater.formatInt(property.numbersOfRooms), true),
+                        nbBathrooms = FieldState(formFormater.formatInt(property.numbersOfBathrooms), true),
+                        nbBedrooms = FieldState(formFormater.formatInt(property.numbersOfBedrooms), true),
                         price = FieldState(formFormater.formatDouble(property.price), true),
                         entryDate = InstantFieldState(property.entryDate, true),
                         saleDate = InstantFieldState(property.saleDate, true),
                         apartmentNumber = FieldState(formFormater.formatInt(property.apartmentNumber), true),
                         location = location!!,
                         selectedAgent = property.agent,
-                        selectedEstateType = property.type,
+                        selectedEstateType = property.realEstateType,
                         selectedCommodities = property.commodities,
                         pictures = property.pictures.sortedBy { it.order }.mapIndexed { index, picture ->
                             picture.copy(order = index)
