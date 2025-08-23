@@ -4,6 +4,10 @@ import com.julien.mouellic.realestatemanager.domain.model.Property
 
 sealed class SearchPropertiesUIState {
 
+    data class WaitingForUserInteraction(
+        val searchProperties: SearchProperties
+    ) : SearchPropertiesUIState()
+
     data class IsLoading(
         val searchProperties: SearchProperties
     ) : SearchPropertiesUIState()

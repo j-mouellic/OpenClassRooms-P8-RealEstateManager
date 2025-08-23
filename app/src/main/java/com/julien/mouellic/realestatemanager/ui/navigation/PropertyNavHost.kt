@@ -13,11 +13,10 @@ import com.julien.mouellic.realestatemanager.ui.screen.detailedproperty.Detailed
 import com.julien.mouellic.realestatemanager.ui.screen.loancalculator.LoanCalculatorScreen
 import com.julien.mouellic.realestatemanager.ui.screen.searchproperty.SearchPropertiesScreen
 
-// import com.julien.mouellic.realestatemanager.ui.screen.searchproperties.SearchPropertiesScreen
 
 @Composable
 fun PropertyNavHost(navController: NavHostController, modifier: Modifier) {
-    NavHost(navController, startDestination = "all_properties", modifier = modifier) {
+    NavHost(navController, startDestination = "search_properties", modifier = modifier) {
         // List & Map
         composable("all_properties") { AllPropertiesScreen(navController) }
 
@@ -35,7 +34,8 @@ fun PropertyNavHost(navController: NavHostController, modifier: Modifier) {
             val propertyId = backStackEntry.arguments?.getString("propertyId")?.toLong()
             if (propertyId != null) {
                 DetailedPropertyScreen(propertyId)
-            } }
+            }
+        }
 
         // Edit property
         composable("edit_property/{propertyId}") { backStackEntry ->

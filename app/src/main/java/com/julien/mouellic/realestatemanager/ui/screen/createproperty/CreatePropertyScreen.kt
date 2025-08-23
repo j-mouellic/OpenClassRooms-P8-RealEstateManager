@@ -14,11 +14,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -134,35 +141,35 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedTextField(
+                    NumberInputSlider(
+                        label = "Number of Rooms",
                         value = uiState.nbRooms.value,
-                        onValueChange = { viewModel.updateFieldValue("nbRooms", it) },
-                        label = { Text("Number of Rooms") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = !uiState.nbRooms.isValid,
-                        supportingText = { uiState.nbRooms.errorMessage?.let { Text(it) } }
+                        onValueChange = { newValue ->
+                            viewModel.updateFieldValue("nbRooms", newValue)
+                        },
+                        range = 0..20
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedTextField(
-                        value = uiState.nbBathrooms.value,
-                        onValueChange = { viewModel.updateFieldValue("nbBathrooms", it) },
-                        label = { Text("Number of Bathrooms") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = !uiState.nbBathrooms.isValid,
-                        supportingText = { uiState.nbBathrooms.errorMessage?.let { Text(it) } }
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
+                    NumberInputSlider(
+                        label = "Number of Bedrooms",
                         value = uiState.nbBedrooms.value,
-                        onValueChange = { viewModel.updateFieldValue("nbBedrooms", it) },
-                        label = { Text("Number of Bedrooms") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = !uiState.nbBedrooms.isValid,
-                        supportingText = { uiState.nbBedrooms.errorMessage?.let { Text(it) } }
+                        onValueChange = { newValue ->
+                            viewModel.updateFieldValue("nbBedrooms", newValue)
+                        },
+                        range = 0..15
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    NumberInputSlider(
+                        label = "Number of Bathrooms",
+                        value = uiState.nbBathrooms.value,
+                        onValueChange = { newValue ->
+                            viewModel.updateFieldValue("nbBathrooms", newValue)
+                        },
+                        range = 0..15
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -261,6 +268,36 @@ fun CreatePropertyScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NumberInputSlider(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    range: IntRange = 0..15
+) {
+
+    val intValue = value.toIntOrNull() ?: range.first
+    var sliderPosition by remember { mutableFloatStateOf(intValue.toFloat()) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("$label: ${sliderPosition.toInt()}")
+        Slider(
+            value = sliderPosition,
+            onValueChange = {
+                sliderPosition = it
+                onValueChange(it.toInt().toString()) // convertir en String pour le ViewModel
+            },
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = range.last - range.first - 1,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.secondary,
+                activeTrackColor = MaterialTheme.colorScheme.secondary,
+                inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+            )
+        )
     }
 }
 

@@ -1,5 +1,7 @@
 package com.julien.mouellic.realestatemanager.ui.app
 
+import android.R.attr.fontWeight
+import android.R.attr.tint
 import android.provider.Settings.Global.getString
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -20,11 +22,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.julien.mouellic.realestatemanager.R
 import androidx.navigation.compose.rememberNavController
 import com.julien.mouellic.realestatemanager.ui.navigation.PropertyNavHost
@@ -73,24 +80,43 @@ fun BottomNavigationBar(navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp > 600
 
-    BottomNavigation {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    BottomNavigation{
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
+
+                val routeName = item.longLabel.replace(" ", "_").lowercase()
+                val selected = currentRoute == routeName
+
                 BottomNavigationItem(
-                    selected = false,
+                    selected = selected,
                     onClick = {
-                        navController.navigate(item.longLabel.replace(" ", "_").lowercase())
+                        if (!selected) {
+                            navController.navigate(routeName) {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     },
                     label = {
                         val displayLabel = if (isTablet) item.longLabel else item.shortLabel
-                        Text(displayLabel)
+                        Text(
+                            text = displayLabel,
+                            color = if (selected) Color.Black else Color.Gray,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                        )
                     },
                     icon = {
-                        Icon(item.icon, contentDescription = item.longLabel)
+                        Icon(
+                            item.icon,
+                            contentDescription = item.longLabel,
+                            tint = if (selected) Color.Black else Color.Gray)
                     }
                 )
             }
