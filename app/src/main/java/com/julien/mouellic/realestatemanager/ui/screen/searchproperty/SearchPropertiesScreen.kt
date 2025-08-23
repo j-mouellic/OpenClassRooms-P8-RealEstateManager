@@ -5,7 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ViewComfy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -132,13 +134,6 @@ fun PropertyListItem(
                 }
             }
 
-            // TODO : faire un component
-            //  1. mettre des icons edit / delete
-            //  2. remplacer view par un clic sur la card
-            //  3. ajouter des champs de recherche
-
-
-
             // ---------- Column boutons ----------
             Column(
                 horizontalAlignment = Alignment.End,
@@ -146,14 +141,16 @@ fun PropertyListItem(
             ) {
                 IconButton(onClick = { onPropertyEditClick(property.id!!) }) {
                     Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "View Property"
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Property",
+                        tint = Color(0xFF1976D2)
                     )
                 }
                 IconButton(onClick = { onPropertyDeleteClick(property.id!!) }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Property"
+                        contentDescription = "Delete Property",
+                        tint = Color.Red
                     )
                 }
             }
