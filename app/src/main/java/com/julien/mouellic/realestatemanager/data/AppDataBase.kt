@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.julien.mouellic.realestatemanager.data.converter.LongListConverter
 import org.threeten.bp.Instant
 import kotlin.random.Random
 
@@ -35,7 +36,8 @@ import kotlin.random.Random
 @TypeConverters(
     BitmapConverter::class,
     InstantConverter::class,
-    ListConverter::class
+    ListConverter::class,
+    LongListConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDAO
@@ -246,7 +248,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val bathrooms = Random.nextInt(1, 3)
                 val bedrooms = if (rooms > 1) Random.nextInt(1, rooms) else 1
                 val creationDate = randomDaysBack(365)
-                val isSold = false
+                val isSold = Random.nextBoolean()
                 val entryDate = creationDate.plusSeconds(Random.nextLong(1, 30) * 24 * 3600)
                 val saleDate = if (isSold) entryDate.plusSeconds(Random.nextLong(1, 60) * 24 * 3600) else null
 
@@ -284,8 +286,8 @@ abstract class AppDatabase : RoomDatabase() {
                 // image_2 > living_room.jpg
                 // image_3 > bedroom.jpg
                 // image_4 > bathroom.jpg
-                for (order in 1..4) {
-                    val resourceName = "image_${order}"
+                for (order in 0..3) {
+                    val resourceName = "image_${order + 1}"
                     val resId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
 
                     if (resId != 0) {

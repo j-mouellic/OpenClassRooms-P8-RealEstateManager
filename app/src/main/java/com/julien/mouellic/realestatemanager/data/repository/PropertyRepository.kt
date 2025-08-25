@@ -213,6 +213,16 @@ class PropertyRepository @Inject constructor(private val propertyDAO: PropertyDA
         isAvailable: Boolean?,
         commodities: List<Long>?
     ): List<Property> {
-        return propertyDAO.search(type, minPrice, maxPrice, minSurface, maxSurface, minNbRooms, maxNbRooms, isAvailable).map { it.toModel() }
+
+        return propertyDAO
+            .search(type, minPrice, maxPrice, minSurface, maxSurface, minNbRooms, maxNbRooms, isAvailable)
+            .filter { property ->
+                if (commodities.isNullOrEmpty()) {
+                    true
+                } else {
+                    property.commoditiesIds.any { commodities.contains(it) }
+                }
+            }
+            .map { it.toModel() }
     }
 }
