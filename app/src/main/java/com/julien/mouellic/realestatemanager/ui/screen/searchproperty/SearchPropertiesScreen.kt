@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.ui.screen.searchproperty
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -128,6 +129,7 @@ fun SearchPropertiesScreen(
             is SearchPropertiesUIState.Success -> {
                 val listProperties = (uiState as SearchPropertiesUIState.Success).listProperties
                 items(listProperties) { property ->
+
                     PropertyListItem(
                         property = property,
                         onPropertyEditClick = { navController.navigate("detailed_property/${property.id}") },

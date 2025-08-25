@@ -59,6 +59,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,12 +75,14 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.ui.component.LoadingScreen
+import com.julien.mouellic.realestatemanager.utils.ResponsiveUtils
 
 @Composable
 fun AllPropertiesScreen(navController: NavHostController, viewModel: AllPropertiesViewModel = hiltViewModel()) {
     var selectedTab by remember { mutableStateOf(0) }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isTablet = ResponsiveUtils.isTablet(LocalContext.current)
 
     Column(modifier = Modifier.fillMaxSize()) {
         val tabTitles = listOf("List View", "Map View")
@@ -136,18 +139,23 @@ fun AllPropertiesScreen(navController: NavHostController, viewModel: AllProperti
                         LoadingScreen()
                     }
                     is AllPropertiesUIState.Success -> {
-                        PropertyListView(
-                            properties = (uiState as AllPropertiesUIState.Success).listProperties,
-                            onPropertyEditClick = { propertyId ->
-                                navController.navigate("edit_property/$propertyId")
-                            },
-                            onPropertyShowClick = { propertyId ->
-                                navController.navigate("detailed_property/$propertyId")
-                            },
-                            onPropertyDeleteClick = { propertyId ->
-                                viewModel.deleteProperty(propertyId)
-                            }
-                        )
+                        if (isTablet){
+                            // creer un row avec dedans le propertylistview à gauche et à droite le detail de propriété sélectionnée
+                            // Gérer state >>> notion propriété sélectionnée
+                        }else{
+                            PropertyListView(
+                                properties = (uiState as AllPropertiesUIState.Success).listProperties,
+                                onPropertyEditClick = { propertyId ->
+                                    navController.navigate("edit_property/$propertyId")
+                                },
+                                onPropertyShowClick = { propertyId ->
+                                    navController.navigate("detailed_property/$propertyId")
+                                },
+                                onPropertyDeleteClick = { propertyId ->
+                                    viewModel.deleteProperty(propertyId)
+                                }
+                            )
+                        }
                     }
                     is AllPropertiesUIState.Error -> {
                         Text("Error: ${(uiState as AllPropertiesUIState.Error).errorMessage}")

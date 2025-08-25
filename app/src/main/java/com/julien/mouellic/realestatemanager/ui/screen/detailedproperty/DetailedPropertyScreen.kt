@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.julien.mouellic.realestatemanager.domain.model.Property
+import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
 
 @Composable
 fun DetailedPropertyScreen(
@@ -74,7 +75,7 @@ fun PropertyTitleSection(property: Property) {
     )
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-        text = "Price: ${property.price?.toInt()?.formatWithSpaces() ?: 0} €",
+        text = "Price: " + CurrencyUtils.display(property.price),
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
     )
     Spacer(modifier = Modifier.height(12.dp))
