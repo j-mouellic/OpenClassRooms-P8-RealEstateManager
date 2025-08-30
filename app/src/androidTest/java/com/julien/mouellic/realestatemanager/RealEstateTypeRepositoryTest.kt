@@ -85,7 +85,7 @@ class RealEstateTypeRepositoryTest {
             repository.insert(RealEstateType(id = null, name = name))
         }
 
-        val fromDb = repository.getAll().first()
+        val fromDb = repository.getAll()
         assertEquals(4, fromDb.size)
         assertEquals(types.sorted(), fromDb.map { it.name }.sorted())
     }

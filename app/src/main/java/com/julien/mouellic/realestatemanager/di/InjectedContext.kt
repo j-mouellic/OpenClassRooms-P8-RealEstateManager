@@ -8,7 +8,6 @@ import android.net.NetworkCapabilities
 class InjectedContext(private val _context: Context) {
     /**
      * Check if we're connected to some type of Internet network.
-     * Doesn't necessarily mean that the connection is working!
      */
     fun isInternetAvailable(): Boolean {
         val connectivityManager = _context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
