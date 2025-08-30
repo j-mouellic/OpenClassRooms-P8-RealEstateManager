@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 
+
 class InjectedContext(private val _context: Context) {
     /**
      * Check if we're connected to some type of Internet network.
