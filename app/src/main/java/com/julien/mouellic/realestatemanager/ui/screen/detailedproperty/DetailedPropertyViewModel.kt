@@ -15,12 +15,13 @@ class DetailedPropertyViewModel @Inject constructor(
     private val getPropertyWithDetailsUseCase: GetPropertyWithDetailsUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<DetailedPropertyUIState>(DetailedPropertyUIState.Loading)
+    private val _uiState = MutableStateFlow<DetailedPropertyUIState>(DetailedPropertyUIState.NoPropertySelected)
     val uiState: StateFlow<DetailedPropertyUIState> = _uiState
 
     fun loadProperty(propertyId: Long) {
         viewModelScope.launch {
             try {
+                _uiState.value = DetailedPropertyUIState.Loading
                 val property = getPropertyWithDetailsUseCase(propertyId)
                 if (property != null) {
                     _uiState.value = DetailedPropertyUIState.Success(property)

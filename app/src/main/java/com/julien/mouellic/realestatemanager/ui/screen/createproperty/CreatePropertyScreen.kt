@@ -282,13 +282,17 @@ fun NumberInputSlider(
     val intValue = value.toIntOrNull() ?: range.first
     var sliderPosition by remember { mutableFloatStateOf(intValue.toFloat()) }
 
+    LaunchedEffect(intValue) {
+        sliderPosition = intValue.toFloat()
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text("$label: ${sliderPosition.toInt()}")
         Slider(
             value = sliderPosition,
             onValueChange = {
                 sliderPosition = it
-                onValueChange(it.toInt().toString()) // convertir en String pour le ViewModel
+                onValueChange(it.toInt().toString())
             },
             valueRange = range.first.toFloat()..range.last.toFloat(),
             steps = range.last - range.first - 1,

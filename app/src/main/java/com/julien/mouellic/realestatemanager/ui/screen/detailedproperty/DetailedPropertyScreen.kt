@@ -1,22 +1,29 @@
 package com.julien.mouellic.realestatemanager.ui.screen.detailedproperty
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
@@ -33,6 +40,33 @@ fun DetailedPropertyScreen(
     }
 
     when (uiState) {
+        is DetailedPropertyUIState.NoPropertySelected -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF0F0F0)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Home,
+                        contentDescription = "No property selected",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(80.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Select a property to see its details",
+                        color = Color.Gray,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
         is DetailedPropertyUIState.Loading -> {
             Text("Loading property...")
         }
@@ -75,8 +109,16 @@ fun PropertyTitleSection(property: Property) {
     )
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-        text = "Price: " + CurrencyUtils.display(property.price),
+        text = "Price : " + CurrencyUtils.display(property.price),
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = if (property.isSold) "Sold" else "For Sale",
+        style = MaterialTheme.typography.titleMedium.copy(
+            fontWeight = FontWeight.SemiBold,
+            color = if (property.isSold) Color.Red else Color(0xFF388E3C)
+        )
     )
     Spacer(modifier = Modifier.height(12.dp))
     Divider()
@@ -198,11 +240,4 @@ fun PropertyAgentSection(property: Property) {
             Text("Phone: ${agent.phoneNumber ?: "-"}")
         }
     }
-}
-
-fun Int.formatWithSpaces(): String {
-    return this.toString().reversed()
-        .chunked(3)
-        .joinToString(" ")
-        .reversed()
 }

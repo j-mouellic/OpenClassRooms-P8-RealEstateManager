@@ -1,4 +1,4 @@
-package com.julien.mouellic.realestatemanager.ui.screen.allproperties
+package com.julien.mouellic.realestatemanager.ui.screen.allproperties.list
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -24,21 +23,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.FilterAltOff
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MeetingRoom
 import androidx.compose.material.icons.filled.Pageview
 import androidx.compose.material.icons.filled.SquareFoot
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,9 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -75,114 +69,191 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.ui.component.LoadingScreen
+import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllPropertiesUiState
+import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllPropertiesViewModel
+import com.julien.mouellic.realestatemanager.ui.screen.detailedproperty.DetailedPropertyScreen
+import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
 import com.julien.mouellic.realestatemanager.utils.ResponsiveUtils
 
 @Composable
-fun AllPropertiesScreen(navController: NavHostController, viewModel: AllPropertiesViewModel = hiltViewModel()) {
+fun AllPropertiesScreen(
+    navController: NavHostController,
+    viewModel: AllPropertiesViewModel
+) {
     var selectedTab by remember { mutableStateOf(0) }
 
     val uiState by viewModel.uiState.collectAsState()
     val isTablet = ResponsiveUtils.isTablet(LocalContext.current)
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        val tabTitles = listOf("List View", "Map View")
-        val tabIcons = listOf(Icons.Default.List, Icons.Default.Map)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            val tabTitles = listOf("List View", "Map View")
+            val tabIcons = listOf(Icons.Default.List, Icons.Default.Map)
 
-        TabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = Color.White,
-            contentColor = Color(0xFF000000),
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    Modifier
-                        .tabIndicatorOffset(tabPositions[selectedTab])
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)),
-                    color = Color(0xFF000000),
-                )
-            }
-        ) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    selectedContentColor = Color(0xFF343434),
-                    unselectedContentColor = Color.Gray
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(vertical = 12.dp, horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = Color.White,
+                contentColor = Color(0xFF000000),
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        Modifier
+                            .tabIndicatorOffset(tabPositions[selectedTab])
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)),
+                        color = Color(0xFF000000),
+                    )
+                }
+            ) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        selectedContentColor = Color(0xFF343434),
+                        unselectedContentColor = Color.Gray
                     ) {
-                        Icon(
-                            imageVector = tabIcons[index],
-                            contentDescription = title,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                                letterSpacing = 0.5.sp
+                        Row(
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = tabIcons[index],
+                                contentDescription = title,
+                                modifier = Modifier.size(20.dp)
                             )
-                        )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
+                                    letterSpacing = 0.5.sp
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            when (selectedTab) {
+                0 -> {
+                    when (uiState) {
+                        is AllPropertiesUiState.IsLoading -> {
+                            LoadingScreen()
+                        }
+
+                        is AllPropertiesUiState.Success -> {
+                            if (isTablet) {
+
+                                var selectedPropertyId by remember { mutableStateOf<Long?>(null) }
+
+                                Row(modifier = Modifier.fillMaxSize()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                    ) {
+                                        PropertyListView(
+                                            properties = (uiState as AllPropertiesUiState.Success).listProperties,
+                                            onPropertyEditClick = { propertyId ->
+                                                navController.navigate("edit_property/$propertyId")
+                                            },
+                                            onPropertyShowClick = { propertyId ->
+                                                selectedPropertyId = propertyId
+                                            },
+                                            onPropertyDeleteClick = { propertyId ->
+                                                viewModel.deleteProperty(propertyId)
+                                            }
+                                        )
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                            .background(Color(0xFFF8F8F8))
+                                    ) {
+                                        DetailedPropertyScreen(
+                                            propertyId = selectedPropertyId,
+                                        )
+                                    }
+                                }
+                            } else {
+                                PropertyListView(
+                                    properties = (uiState as AllPropertiesUiState.Success).listProperties,
+                                    onPropertyEditClick = { propertyId ->
+                                        navController.navigate("edit_property/$propertyId")
+                                    },
+                                    onPropertyShowClick = { propertyId ->
+                                        navController.navigate("detailed_property/$propertyId")
+                                    },
+                                    onPropertyDeleteClick = { propertyId ->
+                                        viewModel.deleteProperty(propertyId)
+                                    }
+                                )
+                            }
+                        }
+
+                        is AllPropertiesUiState.Error -> {
+                            Text("Error: ${(uiState as AllPropertiesUiState.Error).sError}")
+                        }
+
+                        else -> {
+                            Text("Error: Unknown state")
+                        }
+                    }
+                }
+
+                1 -> {
+                    when (uiState) {
+                        is AllPropertiesUiState.IsLoading -> {
+                            LoadingScreen()
+                        }
+
+                        is AllPropertiesUiState.Success -> {
+                            PropertyMapView(
+                                properties = (uiState as AllPropertiesUiState.Success).listProperties,
+                                onPropertyShowClick = { propertyId ->
+                                    navController.navigate("detailed_property/$propertyId")
+                                })
+                        }
+
+                        is AllPropertiesUiState.Error -> {
+                            Text("Error: ${(uiState as AllPropertiesUiState.Error).sError}")
+                        }
+
+                        else -> {
+                            Text("Error: Unknown state")
+                        }
                     }
                 }
             }
         }
 
-        when (selectedTab) {
-            0 -> {
-                when (uiState) {
-                    is AllPropertiesUIState.IsLoading -> {
-                        LoadingScreen()
-                    }
-                    is AllPropertiesUIState.Success -> {
-                        if (isTablet){
-                            // creer un row avec dedans le propertylistview à gauche et à droite le detail de propriété sélectionnée
-                            // Gérer state >>> notion propriété sélectionnée
-                        }else{
-                            PropertyListView(
-                                properties = (uiState as AllPropertiesUIState.Success).listProperties,
-                                onPropertyEditClick = { propertyId ->
-                                    navController.navigate("edit_property/$propertyId")
-                                },
-                                onPropertyShowClick = { propertyId ->
-                                    navController.navigate("detailed_property/$propertyId")
-                                },
-                                onPropertyDeleteClick = { propertyId ->
-                                    viewModel.deleteProperty(propertyId)
-                                }
-                            )
-                        }
-                    }
-                    is AllPropertiesUIState.Error -> {
-                        Text("Error: ${(uiState as AllPropertiesUIState.Error).errorMessage}")
-                    }
-                    else -> {
-                        Text("Error: Unknown state")
-                    }
-                }
-            }
-            1 -> {
-                when (uiState) {
-                    is AllPropertiesUIState.IsLoading -> {
-                        LoadingScreen()
-                    }
-                    is AllPropertiesUIState.Success -> {
-                        PropertyMapView(properties = (uiState as AllPropertiesUIState.Success).listProperties, onPropertyShowClick = { propertyId ->
-                            navController.navigate("detailed_property/$propertyId")
-                        })
-                    }
-                    is AllPropertiesUIState.Error -> {
-                        Text("Error: ${(uiState as AllPropertiesUIState.Error).errorMessage}")
-                    }
-                    else -> {
-                        Text("Error: Unknown state")
-                    }
-                }
-            }
+        FloatingActionButton(
+            onClick = {
+                viewModel.updateSearchProperties(
+                    AllPropertiesUiState.SearchProperties(
+                        type = null,
+                        minPrice = null,
+                        maxPrice = null,
+                        minSurface = null,
+                        maxSurface = null,
+                        minNbRooms = null,
+                        maxNbRooms = null,
+                        isAvailable = null,
+                        commodities = null
+                    )
+                )
+                viewModel.searchProperties()
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.FilterAltOff,
+                contentDescription = "Reset filters"
+            )
         }
     }
 }
@@ -193,14 +264,16 @@ fun PropertyListView(
     properties: List<Property>,
     onPropertyEditClick: (Long) -> Unit,
     onPropertyShowClick: (Long) -> Unit,
-    onPropertyDeleteClick: (Long) -> Unit) {
+    onPropertyDeleteClick: (Long) -> Unit
+) {
     LazyColumn {
         items(properties) { property ->
             PropertyListItem(
                 property = property,
                 onPropertyEditClick = onPropertyEditClick,
                 onPropertyShowClick = onPropertyShowClick,
-                onPropertyDeleteClick = onPropertyDeleteClick)
+                onPropertyDeleteClick = onPropertyDeleteClick
+            )
         }
     }
 }
@@ -230,16 +303,17 @@ fun PropertyListItem(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 // ---------- Property Image ----------
-                val randomPicture = property.pictures.takeIf { it.isNotEmpty() }?.random()?.content
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (randomPicture != null) {
+                    val firstImage = property.pictures.firstOrNull()?.content?.asImageBitmap()
+
+                    if (firstImage != null) {
                         Image(
-                            bitmap = randomPicture.asImageBitmap(),
+                            bitmap = firstImage,
                             contentDescription = "Property Image",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -266,11 +340,28 @@ fun PropertyListItem(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // ---------- Property Name ----------
-                Text(
-                    text = property.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
+                // ---------- Property Name and Status ----------
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Text(
+                        text = property.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+
+                    Text(
+                        text = if (property.isSold) "Sold" else "For Sale",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = if (property.isSold) Color.Red else Color(0xFF388E3C)
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -283,7 +374,7 @@ fun PropertyListItem(
                     // Price
                     property.price?.let { price ->
                         Text(
-                            text = "${price.toInt().formatWithSpaces()} €",
+                            text = "Price : " + CurrencyUtils.display(price),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF388E3C)
                         )
@@ -405,7 +496,10 @@ fun PropertyListItem(
 }
 
 @Composable
-fun PropertyMapView(properties: List<Property> = emptyList(), onPropertyShowClick: (Long) -> Unit = {}) {
+fun PropertyMapView(
+    properties: List<Property> = emptyList(),
+    onPropertyShowClick: (Long) -> Unit = {}
+) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(48.8566, 2.3522), 16f) // Default : Paris
     }
@@ -414,16 +508,16 @@ fun PropertyMapView(properties: List<Property> = emptyList(), onPropertyShowClic
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-       properties.forEach { property ->
+        properties.forEach { property ->
             val lat = property.location?.latitude ?: return@forEach
             val lng = property.location?.longitude ?: return@forEach
 
-           if (lat == null || lng == null) {
-               Log.w("PropertyMapView", "Property ${property.id} has no location!")
-               return@forEach
-           }
+            if (lat == null || lng == null) {
+                Log.w("PropertyMapView", "Property ${property.id} has no location!")
+                return@forEach
+            }
 
-           Log.d("PropertyMapView", "Adding marker for property ${property.id} at ($lat, $lng)")
+            Log.d("PropertyMapView", "Adding marker for property ${property.id} at ($lat, $lng)")
 
             Marker(
                 state = MarkerState(position = LatLng(lat, lng)),
@@ -439,9 +533,3 @@ fun PropertyMapView(properties: List<Property> = emptyList(), onPropertyShowClic
     }
 }
 
-fun Int.formatWithSpaces(): String {
-    return this.toString().reversed()
-        .chunked(3)
-        .joinToString(" ")
-        .reversed()
-}
