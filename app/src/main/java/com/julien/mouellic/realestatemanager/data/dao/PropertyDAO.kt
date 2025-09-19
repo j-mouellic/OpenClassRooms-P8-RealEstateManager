@@ -60,59 +60,6 @@ interface PropertyDAO {
     @Query("SELECT * FROM properties ORDER BY id DESC")
     suspend fun getAllNewerToOlder(): List<PropertyDTO>
 
-    /*@Query(
-        """
-        SELECT 
-            p.id AS id,
-            p.name,
-            p.description,
-            p.surface,
-            p.numbers_of_rooms,
-            p.price,
-            p.is_sold,
-            p.creation_date,
-            p.entry_date,
-            p.sale_date,
-            t.name,
-            l.street,
-            l.postal_code,
-            l.city,
-            l.country,
-            l.longitude,
-            l.latitude,
-            a.first_name || ' ' || a.last_name AS agentName,
-            COALESCE(GROUP_CONCAT(c.name,','),'') AS commoditiesName,
-            GROUP_CONCAT(c.id,',') AS commoditiesIds,
-            pi.content AS picture
-        FROM properties p
-        LEFT JOIN real_estate_types t ON t.id = p.real_estate_type_id
-        LEFT JOIN locations l ON l.id = p.location_id
-        LEFT JOIN agents a ON a.id = p.agent_id
-        LEFT JOIN property_commodity pc ON pc.property_id = p.id 
-        LEFT JOIN commodities c ON c.id = pc.commodity_id
-        LEFT JOIN pictures pi ON pi.property_id = p.id AND pi.`order` = 0
-        WHERE
-            (:type IS NULL OR t.id = :type) AND
-            (:minPrice IS NULL OR p.price >= :minPrice) AND
-            (:maxPrice IS NULL OR p.price <= :maxPrice) AND
-            (:minSurface IS NULL OR p.surface >= :minSurface) AND
-            (:maxSurface IS NULL OR p.surface <= :maxSurface) AND
-            (:minNbRooms IS NULL OR p.numbers_of_rooms >= :minNbRooms) AND
-            (:maxNbRooms IS NULL OR p.numbers_of_rooms <= :maxNbRooms) AND
-            (:isAvailable IS NULL OR p.is_sold = :isAvailable)
-        GROUP BY p.id
-        """
-    )
-    suspend fun search(
-        type: Long?,
-        minPrice: Double?,
-        maxPrice: Double?,
-        minSurface: Double?,
-        maxSurface: Double?,
-        minNbRooms: Int?,
-        maxNbRooms: Int?,
-        isAvailable: Boolean?,
-    ): List<PropertyListItemFlatten>*/
     @Query(
         """
     SELECT 

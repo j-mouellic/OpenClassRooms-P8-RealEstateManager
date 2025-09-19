@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import com.julien.mouellic.realestatemanager.utils.DateUtils
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -46,7 +47,7 @@ fun InstantDateSelectionField(
         .withZone(zoneId)
 
     val formattedDate = selectedInstant?.let {
-        dateFormatter.format(it)
+        DateUtils.format(it)
     } ?: ""
 
     val datePickerState = rememberDatePickerState(
