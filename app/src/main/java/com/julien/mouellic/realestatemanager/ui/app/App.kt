@@ -52,6 +52,7 @@ import com.julien.mouellic.realestatemanager.R
 import androidx.navigation.compose.rememberNavController
 import com.julien.mouellic.realestatemanager.ui.navigation.PropertyNavHost
 import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
+import com.julien.mouellic.realestatemanager.utils.DateUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,8 +111,9 @@ fun App() {
 }
 
 @Composable
-fun DrawerContent(modifier: Modifier = Modifier){
+fun DrawerContent(modifier: Modifier = Modifier) {
     var selectedCurrency by remember { mutableStateOf(CurrencyUtils.currency) }
+    var selectedDateFormat by remember { mutableStateOf(DateUtils.formatType) }
 
     Column(
         modifier = modifier
@@ -124,6 +126,7 @@ fun DrawerContent(modifier: Modifier = Modifier){
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
+        // --- Section Currency ---
         Text("Choose currency:")
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -170,8 +173,60 @@ fun DrawerContent(modifier: Modifier = Modifier){
             Spacer(modifier = Modifier.width(8.dp))
             Text("Dollar ($)")
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // --- Section Date Format ---
+        Text("Choose date format:")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Option EU
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    selectedDateFormat = 0
+                    DateUtils.formatType = 0
+                }
+                .padding(vertical = 4.dp)
+        ) {
+            RadioButton(
+                selected = selectedDateFormat == 0,
+                onClick = {
+                    selectedDateFormat = 0
+                    DateUtils.formatType = 0
+                }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("European (dd/MM/yyyy)")
+        }
+
+        // Option US
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    selectedDateFormat = 1
+                    DateUtils.formatType = 1
+                }
+                .padding(vertical = 4.dp)
+        ) {
+            RadioButton(
+                selected = selectedDateFormat == 1,
+                onClick = {
+                    selectedDateFormat = 1
+                    DateUtils.formatType = 1
+                }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("US (yyyy/MM/dd)")
+        }
     }
 }
+
 
 data class NavigationItem(
     val longLabel: String,

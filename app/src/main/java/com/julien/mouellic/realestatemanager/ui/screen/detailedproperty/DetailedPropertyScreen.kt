@@ -1,5 +1,7 @@
 package com.julien.mouellic.realestatemanager.ui.screen.detailedproperty
 
+import android.util.Log
+import com.julien.mouellic.realestatemanager.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,8 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
+import com.julien.mouellic.realestatemanager.utils.DateUtils
 
 @Composable
 fun DetailedPropertyScreen(
@@ -93,6 +97,7 @@ fun PropertyDetailContent(property: Property) {
     ) {
         PropertyTitleSection(property)
         PropertyImagesSection(property)
+        PropertyDateSection(property)
         PropertyLocationSection(property)
         PropertyDescriptionSection(property)
         PropertyFeaturesSection(property)
@@ -155,6 +160,29 @@ fun PropertyImagesSection(property: Property) {
 }
 
 @Composable
+fun PropertyDateSection(property: Property) {
+    val entryDate = property.entryDate?.let { DateUtils.format(it) } ?: "-"
+    val saleDate = property.saleDate?.let { DateUtils.format(it) } ?: "-"
+
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        "Dates :",
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+    )
+    Text(
+        text = "Entry Date : $entryDate",
+        style = MaterialTheme.typography.bodyMedium
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = "Sale Date : $saleDate",
+        style = MaterialTheme.typography.bodyMedium
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Divider()
+}
+
+@Composable
 fun PropertyLocationSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))
     Text(
@@ -162,20 +190,45 @@ fun PropertyLocationSection(property: Property) {
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
     Spacer(modifier = Modifier.height(4.dp))
-    property.location?.let { loc ->
-        val address = buildString {
+    val address = property.location?.let { loc ->
+        buildString {
             loc.streetNumber?.let { append(it).append(" ") }
             loc.street?.let { append(it).append(", ") }
             loc.postalCode?.let { append(it).append(" ") }
             loc.city?.let { append(it).append(", ") }
             loc.country?.let { append(it) }
-        }.ifBlank { "-" }
+        }
+    }.orEmpty()
 
-        Text(address)
+    Text(if (address.isBlank()) "-" else address)
+
+    if (address.isNotBlank()) {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        val encodedAddress = java.net.URLEncoder.encode(address, "UTF-8")
+        val mapUrl = "https://maps.googleapis.com/maps/api/staticmap?" +
+                "center=$encodedAddress" +
+                "&zoom=15" +
+                "&size=600x300" +
+                "&markers=color:red|$encodedAddress" +
+                "&key=${BuildConfig.MAPS_API_KEY}"
+
+        Log.d("PropertyLocationSection", "MAPS_API_KEY = ${BuildConfig.MAPS_API_KEY}")
+
+        AsyncImage(
+            model = mapUrl,
+            contentDescription = "Property location map",
+            modifier = Modifier.fillMaxWidth().height(180.dp),
+            contentScale = ContentScale.Crop,
+            onSuccess = { Log.d("PropertyLocationSection", "Image loaded successfully") },
+            onError = { it.result.throwable?.let { e -> Log.e("PropertyLocationSection", "Error loading image", e) } }
+        )
     }
+
     Spacer(modifier = Modifier.height(12.dp))
     Divider()
 }
+
 
 @Composable
 fun PropertyDescriptionSection(property: Property) {

@@ -22,7 +22,6 @@ class MainActivity : ComponentActivity() {
         lateinit var mainActivity: MainActivity
         private const val TAG = "MainActivity"
     }
-
 }
 
 @Preview(showBackground = true)
@@ -30,3 +29,25 @@ class MainActivity : ComponentActivity() {
 fun DefaultPreview() {
     App()
 }
+
+/**
+ * var locationPermissionsGranted by remember { mutableStateOf(areLocationPermissionsAlreadyGranted()) }
+ *             var shouldShowPermissionRationale by remember {
+ *                 mutableStateOf(
+ *                     shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+ *                 )
+ *             }
+ *
+ *             var shouldDirectUserToApplicationSettings by remember {
+ *                 mutableStateOf(false)
+ *             }
+ *
+ *             var currentPermissionsStatus by remember {
+ *                 mutableStateOf(decideCurrentPermissionStatus(locationPermissionsGranted, shouldShowPermissionRationale))
+ *             }
+ *
+ *             val locationPermissions = arrayOf(
+ *                 Manifest.permission.ACCESS_FINE_LOCATION,
+ *                 Manifest.permission.ACCESS_COARSE_LOCATION
+ *             )
+ * **/

@@ -205,7 +205,7 @@ fun SearchPropertiesScreen(
                 },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Rechercher")
+                Text("Search")
             }
 
             Button(

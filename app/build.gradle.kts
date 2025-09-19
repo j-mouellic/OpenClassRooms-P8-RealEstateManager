@@ -12,6 +12,7 @@ plugins {
 
 val properties = Properties()
 properties.load(rootProject.file("local.properties").inputStream())
+val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.julien.mouellic.realestatemanager"
@@ -23,7 +24,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
         manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY")
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -46,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -54,6 +58,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.coil.compose)
     kapt(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)

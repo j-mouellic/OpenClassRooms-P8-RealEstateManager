@@ -198,6 +198,7 @@ fun CreatePropertyScreen(
                     InstantDateSelectionField(
                         label = "Sale Date",
                         selectedInstant = uiState.saleDate.value,
+
                         onDateSelected = { newInstant ->
                             viewModel.updateFieldValue("saleDate", newInstant)
                         }

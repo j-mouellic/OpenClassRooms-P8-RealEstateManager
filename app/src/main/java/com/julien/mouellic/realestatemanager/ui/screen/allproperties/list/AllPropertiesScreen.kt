@@ -501,7 +501,7 @@ fun PropertyMapView(
     onPropertyShowClick: (Long) -> Unit = {}
 ) {
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(48.8566, 2.3522), 16f) // Default : Paris
+        position = CameraPosition.fromLatLngZoom(LatLng(40.7660, -73.9832), 16f) // Default : Paris
     }
 
     GoogleMap(
