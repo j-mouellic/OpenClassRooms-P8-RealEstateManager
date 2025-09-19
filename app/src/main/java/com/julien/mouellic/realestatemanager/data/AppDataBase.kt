@@ -81,26 +81,29 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         fun generateApartmentName(): String {
-            val types = listOf("Appartement", "Loft", "Studio")
-            val floors = listOf("rez-de-chaussée", "1er étage", "2ème étage", "dernier étage")
+            val types = listOf("Apartment", "Loft", "Studio", "Penthouse")
+            val floors = listOf("ground floor", "1st floor", "2nd floor", "top floor", "near Central Park")
+
 
             return "${types.random()} - ${floors.random()}"
         }
 
         fun generateApartmentDescription(): String {
             val attributes = listOf(
-                "spacieux", "lumineux", "chaleureux", "élégant", "moderne", "raffiné",
-                "avec parquet d'origine", "moulures et cheminées décoratives",
-                "grandes fenêtres offrant une belle lumière naturelle", "balcon filant",
-                "vue sur la cour intérieure", "cuisine ouverte entièrement équipée",
-                "salle de bain moderne avec baignoire et double vasque"
+                "spacious", "bright", "modern", "stylish", "cozy", "renovated",
+                "hardwood floors", "large windows with natural light",
+                "balcony with park views", "rooftop access",
+                "open kitchen fully equipped", "luxury bathroom with walk-in shower",
+                "steps away from Central Park", "city skyline view"
             )
+
 
             val selectedAttributes = attributes.shuffled().take(Random.nextInt(4, 7))
 
-            return "Charmant appartement haussmannien, " +
+
+            return "Beautiful New York apartment, " +
                     selectedAttributes.joinToString(", ") +
-                    ". Idéal pour profiter du charme parisien et d'un confort moderne."
+                    ". Perfect for enjoying the vibrant Manhattan lifestyle near Central Park."
         }
         fun randomDaysBack(maxDays: Int = 365): Instant = Instant.now().minusSeconds(Random.nextLong(0, maxDays.toLong() * 24 * 3600))
 
@@ -217,22 +220,41 @@ abstract class AppDatabase : RoomDatabase() {
             Log.d(TAG, "Commodity 12 inserted with id $idCommodity12")
 
             // Properties
-            val centerLat = 48.8566
-            val centerLng = 2.3522
+            val centerLat = 40.7660000000
+            val centerLng = -73.9832222223
 
-            for (i in 1..10) {
+            fun randomOffset(): Double = Random.nextDouble(from = -0.002, until = 0.002)
+
+            val propertiesAddresses = listOf(
+                Pair(301, "W 56th St"),
+                Pair(325, "W 56th St"),
+                Pair(251, "W 55th St"),
+                Pair(271, "W 55th St"),
+                Pair(334, "W 57th St"),
+                Pair(380, "W 57th St"),
+                Pair(251, "W 58th St"),
+                Pair(299, "W 58th St"),
+                Pair(842, "9th Ave"),
+                Pair(862, "9th Ave"),
+                Pair(968, "8th Ave"),
+                Pair(974, "8th Ave")
+            )
+
+            for (i in 1..12) {
                 Log.d(TAG, "Create property : $i")
+
                 // Location
+                val (num, streetName) = propertiesAddresses[i - 1]
                 val locationId = locationDAO.insert(
                     LocationDTO(
                         id = null,
                         latitude = centerLat + randomOffset(),
                         longitude = centerLng + randomOffset(),
-                        street = "Rue ${randomStreetNumber()} ${randomStreetName()}",
-                        streetNumber = Random.nextInt(1, 20),
-                        city = "Paris",
-                        postalCode = "750${Random.nextInt(1, 20)}",
-                        country = "France"
+                        street = streetName,
+                        streetNumber = num,
+                        city = "New York",
+                        postalCode = "10019",
+                        country = "United States"
                     )
                 )
 
@@ -241,10 +263,10 @@ abstract class AppDatabase : RoomDatabase() {
                 val propertyDescription = generateApartmentDescription()
                 val typeId = 1L // RealEstateType id
                 val agentId = if (i % 2 == 0) 1L else 2L
-                val surface = Random.nextInt(20, 150).toDouble()
-                val pricePerM2 = Random.nextInt(8000, 15000)
+                val surface = Random.nextInt(80, 200).toDouble()
+                val pricePerM2 = Random.nextInt(15000, 30000)
                 val price = surface * pricePerM2
-                val rooms = Random.nextInt(1, 5)
+                val rooms = Random.nextInt(4, 10)
                 val bathrooms = Random.nextInt(1, 3)
                 val bedrooms = if (rooms > 1) Random.nextInt(1, rooms) else 1
                 val creationDate = randomDaysBack(365)
@@ -278,16 +300,12 @@ abstract class AppDatabase : RoomDatabase() {
                     propertyCommodityDAO.insert(PropertyCommodityCrossRefDTO(propertyId = propertyId, commodityId = cId.toLong()))
                 }
 
-                // Pictures (4 per property)
+                // Pictures (5 per property)
                 val converter = BitmapConverter()
+                val flatIndex = if (i <= 6) i else (i - 6)
 
-                // image in res/drawable
-                // image_1 > exterior.jpg
-                // image_2 > living_room.jpg
-                // image_3 > bedroom.jpg
-                // image_4 > bathroom.jpg
-                for (order in 0..3) {
-                    val resourceName = "image_${order + 1}"
+                for (order in 1..5) {
+                    val resourceName = "flat_${flatIndex}_${order}"
                     val resId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
 
                     if (resId != 0) {
@@ -299,15 +317,16 @@ abstract class AppDatabase : RoomDatabase() {
                             id = null,
                             content = content ?: ByteArray(0),
                             thumbnailContent = thumbnailContent ?: ByteArray(0),
-                            order = order,
+                            order = order - 1,
                             propertyId = propertyId
                         )
 
                         pictureDAO.insert(pictureDTO)
                     } else {
-                        Log.w("DBInit", "Image ressource $resourceName introuvable !")
+                        Log.w("DBInit", "Image resource $resourceName not found !")
                     }
                 }
+
             }
 
         }
