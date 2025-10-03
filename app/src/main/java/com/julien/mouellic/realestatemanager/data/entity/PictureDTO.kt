@@ -10,6 +10,17 @@ import androidx.room.PrimaryKey
 import com.julien.mouellic.realestatemanager.data.mapper.PictureMapper
 import com.julien.mouellic.realestatemanager.domain.model.Picture
 
+/**
+ * Data class representing a Picture in the database.
+ *
+ * - Maps to the "pictures" table in Room.
+ * - Each Picture is linked to a Property via a foreign key (`property_id`), forming a 1-to-many (1:N) relationship:
+ *   one Property can have multiple Pictures, but each Picture belongs to a single Property.
+ * - Stores the image content (`content`), a thumbnail version (`thumbnailContent`), and its display order (`order`).
+ *
+ * Functions:
+ * - `toModel()`: Converts this DTO to a domain model `Picture` using `PictureMapper`.
+ */
 @Entity(
     tableName = "pictures",
     foreignKeys = [

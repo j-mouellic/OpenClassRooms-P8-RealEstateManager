@@ -1,9 +1,12 @@
 package com.julien.mouellic.realestatemanager.ui.screen.createproperty
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
+import com.julien.mouellic.realestatemanager.data.repository.GPSRepository
 import com.julien.mouellic.realestatemanager.domain.model.Agent
 import com.julien.mouellic.realestatemanager.domain.model.Commodity
 import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
@@ -12,6 +15,7 @@ import com.julien.mouellic.realestatemanager.domain.model.Picture
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.domain.usecase.agent.GetAllAgentsUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.commodity.GetAllCommoditiesUseCase
+import com.julien.mouellic.realestatemanager.domain.usecase.loan.LoanCalculatorUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.realestatetype.GetAllEstateTypesUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.property.GetPropertyWithDetailsUseCase
 import com.julien.mouellic.realestatemanager.domain.usecase.property.InsertEasyPropertyUseCase
@@ -22,13 +26,17 @@ import com.julien.mouellic.realestatemanager.ui.form.state.FieldState
 import com.julien.mouellic.realestatemanager.ui.form.state.InstantFieldState
 import com.julien.mouellic.realestatemanager.ui.form.state.LocationFormState
 import com.julien.mouellic.realestatemanager.ui.form.validator.FormValidator
+import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllPropertiesUiState
 import com.julien.mouellic.realestatemanager.utils.BitmapUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.threeten.bp.Instant
 import javax.inject.Inject
+import org.threeten.bp.Instant
 
 @HiltViewModel
 class CreatePropertyViewModel @Inject constructor(
@@ -40,7 +48,8 @@ class CreatePropertyViewModel @Inject constructor(
     private val getPropertyWithDetailsUseCase: GetPropertyWithDetailsUseCase,
     private val formValidator : FormValidator,
     private val formConverter: FormConverter,
-    private val formFormater : FormFormater
+    private val formFormater : FormFormater,
+    private val gpsRepository: GPSRepository
 ) : ViewModel() {
 
     companion object {
@@ -148,7 +157,47 @@ class CreatePropertyViewModel @Inject constructor(
     val uiState: StateFlow<CreatePropertyUIState> = _uiState
 
     init {
+        startLocationUpdates()
         loadData()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        viewModelScope.launch {
+            gpsRepository.getLocationUpdate().collect{
+                    location ->
+                updateLocation(location)
+            }
+        }
+    }
+
+    private fun updateLocation(location: android.location.Location) {
+        when(val currentState = _uiState.value){
+            is CreatePropertyUIState.Success -> {}
+            is CreatePropertyUIState.Error -> {}
+            is CreatePropertyUIState.IsLoading -> {}
+            is CreatePropertyUIState.FormState -> {
+                val newLocation = LatLng(location.latitude, location.longitude)
+                _uiState.value = currentState.copy(
+                    propertyGPSLocation = newLocation
+                )
+                println("🔹 GPS updated in Success state: $newLocation")
+            }
+        }
+    }
+
+    fun useCurrentLocation() {
+        val currentState = getFormState()
+        val gpsLocation = currentState.propertyGPSLocation
+        Log.d("CPS", "useCurrentLocation called. gpsLocation = $gpsLocation")
+
+        if (gpsLocation != null) {
+            updateFieldValue("location.latitude", gpsLocation.latitude.toString())
+            updateFieldValue("location.longitude", gpsLocation.longitude.toString())
+            Log.d("CPS", "Updated form fields with gpsLocation = $gpsLocation")
+        } else {
+            Log.w("CPS", "No gpsLocation available, nothing updated")
+        }
     }
 
     private fun loadData() {
@@ -467,6 +516,7 @@ class CreatePropertyViewModel @Inject constructor(
             viewModelScope.launch {
                 _uiState.value = CreatePropertyUIState.IsLoading(formState = getFormState())
                 val property = getPropertyWithDetailsUseCase(propertyId)
+
                 if (property != null) {
                     val location : LocationFormState? = if (property.location != null){
                         val propertyLocation = property.location
@@ -482,7 +532,10 @@ class CreatePropertyViewModel @Inject constructor(
                     } else {
                         null
                     }
+
                     val currentState = getFormState()
+                    val preservedGps = currentState.propertyGPSLocation
+
                     _uiState.value = currentState.copy(
                         name = FieldState(property.name, true),
                         description = FieldState(formFormater.formatString(property.description), true),
@@ -500,7 +553,8 @@ class CreatePropertyViewModel @Inject constructor(
                         selectedCommodities = property.commodities,
                         pictures = property.pictures.sortedBy { it.order }.mapIndexed { index, picture ->
                             picture.copy(order = index)
-                        }
+                        },
+                        propertyGPSLocation = preservedGps
                     )
                     validateAll()
                 } else {
@@ -509,6 +563,5 @@ class CreatePropertyViewModel @Inject constructor(
             }
         }
     }
-
 }
 

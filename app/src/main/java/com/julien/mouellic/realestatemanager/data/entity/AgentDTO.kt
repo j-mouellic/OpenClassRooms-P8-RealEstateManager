@@ -8,6 +8,16 @@ import com.julien.mouellic.realestatemanager.data.mapper.AgentMapper
 import com.julien.mouellic.realestatemanager.domain.model.Agent
 import com.julien.mouellic.realestatemanager.domain.model.Location
 
+/**
+ * Data class representing an Agent in the database.
+ *
+ * - Maps to the "agents" table in Room.
+ * - Contains basic info: first/last name, email, phone number, agency.
+ * - `id` is the primary key, auto-generated.
+ *
+ * Functions:
+ * - `toModel()`: Converts this DTO to a domain model `Agent` using `AgentMapper`.
+ */
 @Entity(
     tableName = "agents"
 )

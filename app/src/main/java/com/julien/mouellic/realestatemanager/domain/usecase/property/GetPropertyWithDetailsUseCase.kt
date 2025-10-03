@@ -4,10 +4,21 @@ import com.julien.mouellic.realestatemanager.data.repository.PropertyWithDetails
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import javax.inject.Inject
 
+/**
+ * Use Case: GetPropertyWithDetailsUseCase
+ *
+ * Fetches a single property along with all its details (location, agent, commodities, pictures)
+ * from the repository using its ID.
+ */
 class GetPropertyWithDetailsUseCase @Inject constructor(
     private val propertyWithDetailsRepository: PropertyWithDetailsRepository
 ) {
-    suspend operator fun invoke(propertyId: Long) : Property? {
+    /**
+     * Executes the use case.
+     * @param propertyId ID of the property to fetch.
+     * @return The property with all details, or null if not found.
+     */
+    suspend operator fun invoke(propertyId: Long): Property? {
         return propertyWithDetailsRepository.getById(propertyId)
     }
 }

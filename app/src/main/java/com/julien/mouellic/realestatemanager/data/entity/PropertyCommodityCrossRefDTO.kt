@@ -5,6 +5,22 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 
+/**
+ * Junction table representing the many-to-many relationship between Properties and Commodities.
+ *
+ * - Maps to the "property_commodity" table in Room.
+ * - Each row links one Property (propertyId) with one Commodity (commodityId).
+ * - Enables querying:
+ *    - All commodities for a given property.
+ *    - All properties that have a specific commodity.
+ *
+ * Foreign keys:
+ * - property_id → Properties table (CASCADE on delete)
+ * - commodity_id → Commodities table (CASCADE on delete)
+ *
+ * Primary key:
+ * - Composite of property_id and commodity_id to ensure uniqueness.
+ */
 @Entity(
     tableName = "property_commodity",
     foreignKeys = [

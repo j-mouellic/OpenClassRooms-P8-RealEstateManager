@@ -5,6 +5,20 @@ import com.julien.mouellic.realestatemanager.data.dao.AgentDAO
 import com.julien.mouellic.realestatemanager.domain.model.Agent
 import javax.inject.Inject
 
+/**
+ * Repository for accessing Agent data from the database.
+ *
+ * Responsibilities:
+ * - Provides a clean API for the domain layer to perform CRUD operations on Agent entities.
+ * - Converts between domain models (Agent) and data layer DTOs (AgentDTO).
+ * - Wraps operations in `Result` objects when using AsResult methods, allowing
+ *   safe exception handling and easier error propagation.
+ *
+ * Example usage of AsResult methods:
+ * val result = agentRepository.getByIdAsResult(1L)
+ * result.onSuccess { agent -> ... }
+ * result.onFailure { error -> ... }
+ */
 class AgentRepository @Inject constructor(private val agentDAO: AgentDAO) {
 
     /** INSERT **/

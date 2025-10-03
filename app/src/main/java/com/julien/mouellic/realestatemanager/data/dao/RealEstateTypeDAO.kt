@@ -9,7 +9,20 @@ import androidx.room.Update
 import com.julien.mouellic.realestatemanager.data.entity.RealEstateTypeDTO
 import kotlinx.coroutines.flow.Flow
 
-
+/**
+ * DAO for accessing real estate types.
+ *
+ * - Handles CRUD operations for `RealEstateTypeDTO`.
+ * - Provides both real-time Flow and suspended queries.
+ *
+ * Functions:
+ * - `insert(realEstateType)`: Adds a new type, ignores if it already exists.
+ * - `update(realEstateType)`: Updates an existing type.
+ * - `delete(realEstateType)`: Deletes a type.
+ * - `getAllAsFlow()`: Returns all types as a Flow (real-time updates).
+ * - `getAll()`: Returns all types once.
+ * - `getById(id)`: Returns a single type by its ID.
+ */
 @Dao
 interface RealEstateTypeDAO {
 

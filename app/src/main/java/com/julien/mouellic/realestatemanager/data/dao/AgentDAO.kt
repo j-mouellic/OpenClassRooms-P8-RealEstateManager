@@ -8,6 +8,17 @@ import androidx.room.Query
 import androidx.room.Update
 import com.julien.mouellic.realestatemanager.data.entity.AgentDTO
 
+/**
+ * DAO (Data Access Object) for the Agent entity.
+ * Provides database operations for agents.
+ *
+ * - `insert` adds a single agent, ignoring conflicts.
+ * - `insertAll` adds multiple agents, ignoring conflicts.
+ * - `update` modifies an existing agent.
+ * - `delete` removes an agent.
+ * - `getAllAgents` fetches all agents from the database.
+ * - `getAgentById` fetches a single agent by its ID.
+ */
 @Dao
 interface AgentDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)

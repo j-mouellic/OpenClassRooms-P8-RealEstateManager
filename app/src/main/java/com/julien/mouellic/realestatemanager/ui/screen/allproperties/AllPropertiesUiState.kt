@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.ui.screen.allproperties
 
+import com.google.android.gms.maps.model.LatLng
 import com.julien.mouellic.realestatemanager.domain.model.Property
 
 sealed class AllPropertiesUiState {
@@ -9,7 +10,8 @@ sealed class AllPropertiesUiState {
 
     data class Success(
         val listProperties : List<Property>,
-        val searchProperties: SearchProperties
+        val searchProperties: SearchProperties,
+        val propertyGPSLocation: LatLng? = null
     ) : AllPropertiesUiState()
 
     data class Error(

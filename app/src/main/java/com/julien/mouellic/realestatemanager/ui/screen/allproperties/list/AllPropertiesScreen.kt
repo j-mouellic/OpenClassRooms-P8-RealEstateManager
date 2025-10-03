@@ -44,6 +44,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +62,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -84,6 +87,7 @@ fun AllPropertiesScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     val isTablet = ResponsiveUtils.isTablet(LocalContext.current)
+    val currentLocation = (uiState as? AllPropertiesUiState.Success)?.propertyGPSLocation
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -107,7 +111,9 @@ fun AllPropertiesScreen(
                 tabTitles.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        onClick = {
+                            Log.i("dEBUG", "CLICK")
+                            selectedTab = index },
                         selectedContentColor = Color(0xFF343434),
                         unselectedContentColor = Color.Gray
                     ) {
@@ -212,6 +218,7 @@ fun AllPropertiesScreen(
                         is AllPropertiesUiState.Success -> {
                             PropertyMapView(
                                 properties = (uiState as AllPropertiesUiState.Success).listProperties,
+                                currentLocation = currentLocation,
                                 onPropertyShowClick = { propertyId ->
                                     navController.navigate("detailed_property/$propertyId")
                                 })
@@ -498,10 +505,19 @@ fun PropertyListItem(
 @Composable
 fun PropertyMapView(
     properties: List<Property> = emptyList(),
+    currentLocation: LatLng?,
     onPropertyShowClick: (Long) -> Unit = {}
 ) {
+
+    val defaultLocation = LatLng(40.7660, -73.9832) // fallback
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(40.7660, -73.9832), 16f) // Default : Paris
+        position = CameraPosition.fromLatLngZoom(currentLocation ?: defaultLocation, 16f)
+    }
+
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let {
+            cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(it, 16f))
+        }
     }
 
     GoogleMap(
@@ -528,6 +544,16 @@ fun PropertyMapView(
                     onPropertyShowClick(property.id!!)
                     true
                 }
+            )
+        }
+
+        currentLocation?.let { location ->
+            Log.d("PropertyMapView", "Adding marker for current location: $location")
+            Marker(
+                state = MarkerState(position = LatLng(location.latitude, location.longitude)),
+                title = "My position",
+                snippet = "My Position",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
             )
         }
     }

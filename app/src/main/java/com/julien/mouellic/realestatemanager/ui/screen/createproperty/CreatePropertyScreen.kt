@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,17 +26,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.julien.mouellic.realestatemanager.ui.component.ImageSelector
 import com.julien.mouellic.realestatemanager.ui.component.InstantDateSelectionField
 import com.julien.mouellic.realestatemanager.ui.component.SelectAgentField
 import com.julien.mouellic.realestatemanager.ui.component.SelectCommoditiesField
 import com.julien.mouellic.realestatemanager.ui.component.SelectEstateTypeField
 import com.julien.mouellic.realestatemanager.ui.form.state.LocationFormState
+import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllPropertiesUiState
 
 const val CPS_TAG = "CreatePropertyScreen"
 const val CPS_MAX_PICTURES_TO_PICK = 10
@@ -44,7 +48,7 @@ const val CPS_MAX_DESCRIPTION_LINES = 5
 @Composable
 fun CreatePropertyScreen(
     propertyId : Long?,
-    viewModel: CreatePropertyViewModel = hiltViewModel()
+    viewModel: CreatePropertyViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val uiState = viewModel.uiState.collectAsState().value
@@ -75,7 +79,6 @@ fun CreatePropertyScreen(
 
     LaunchedEffect(uiState) {
         Log.d(CPS_TAG, "UIState changed: $uiState")
-
         viewModel.loadForEditing(propertyId)
     }
 
@@ -88,9 +91,7 @@ fun CreatePropertyScreen(
             }
 
             is CreatePropertyUIState.Success -> {
-                item {
-                    Text(if (propertyId == null) "Property created successfully with ID: ${uiState.propertyId}" else "Property updated successfully with ID: $propertyId")
-                }
+                item { Text(if (propertyId == null) "Property created successfully with ID: ${uiState.propertyId}" else "Property updated successfully with ID: $propertyId") }
             }
 
             is CreatePropertyUIState.Error -> {
@@ -216,9 +217,11 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    LocationFields(uiState.location) { field, value ->
-                        viewModel.updateFieldValue(field,value)
-                    }
+                    LocationFields(
+                        location = uiState.location,
+                        onLocationChange = { field, value -> viewModel.updateFieldValue(field, value) },
+                        onUseCurrentLocationClick = { viewModel.useCurrentLocation() }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -260,7 +263,8 @@ fun CreatePropertyScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { viewModel.saveProperty() },
+                        onClick = {
+                            viewModel.saveProperty() },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = uiState.isFormValid
                     ) {
@@ -309,7 +313,8 @@ fun NumberInputSlider(
 @Composable
 fun LocationFields(
     location: LocationFormState,
-    onLocationChange: (String, String) -> Unit
+    onLocationChange: (String, String) -> Unit,
+    onUseCurrentLocationClick: (() -> Unit)? = null
 ) {
     Column {
         OutlinedTextField(
@@ -386,5 +391,15 @@ fun LocationFields(
             isError = !location.latitude.isValid,
             supportingText = { location.latitude.errorMessage?.let { Text(it) } }
         )
+
+        onUseCurrentLocationClick?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = it,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Use Current Location")
+            }
+        }
     }
 }

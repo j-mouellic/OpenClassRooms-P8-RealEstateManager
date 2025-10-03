@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.ui.screen.createproperty
 
+import com.google.android.gms.maps.model.LatLng
 import com.julien.mouellic.realestatemanager.domain.model.Agent
 import com.julien.mouellic.realestatemanager.domain.model.Commodity
 import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
@@ -15,7 +16,7 @@ sealed class CreatePropertyUIState {
     ) : CreatePropertyUIState()
 
     data class Success(
-        val propertyId: Long
+        val propertyId: Long,
     ) : CreatePropertyUIState()
 
     data class Error(
@@ -24,6 +25,7 @@ sealed class CreatePropertyUIState {
     ) : CreatePropertyUIState()
 
     data class FormState(
+        val propertyGPSLocation: LatLng? = null,
         val name: FieldState,
         val description: FieldState,
         val surface: FieldState,
@@ -39,9 +41,7 @@ sealed class CreatePropertyUIState {
         val selectedCommodities: List<Commodity> = emptyList(),
         val pictures: List<Picture>,
         val location: LocationFormState,
-
         val isFormValid: Boolean,
-
         val allEstateTypes: List<RealEstateType> = emptyList(),
         val allCommodities: List<Commodity> = emptyList(),
         val allAgents: List<Agent> = emptyList()

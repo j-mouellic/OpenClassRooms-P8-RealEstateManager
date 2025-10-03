@@ -8,6 +8,16 @@ import androidx.room.Query
 import com.julien.mouellic.realestatemanager.data.entity.PropertyCommodityCrossRefDTO
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * DAO for the cross-reference table between Properties and Commodities.
+ * Manages the many-to-many relationship between properties and commodities.
+ *
+ * - `insert` adds a new property-commodity link.
+ * - `delete` methods remove links by property, commodity, or both.
+ * - `getByPropertyId` / `getByCommodityId` retrieve links for a property or commodity.
+ * - `getById` retrieves a specific property-commodity link.
+ * - `getByPropertyIdRT` / `getByCommodityIdRT` / `getByIdRT` provide real-time Flow updates.
+ */
 @Dao
 interface PropertyCommodityCrossRefDAO {
     /** INSERT **/

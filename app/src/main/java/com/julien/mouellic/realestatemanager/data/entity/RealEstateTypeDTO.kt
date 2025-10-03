@@ -9,6 +9,16 @@ import com.julien.mouellic.realestatemanager.data.mapper.RealEstateTypeMapper
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 
+/**
+ * Data class representing a Real Estate Type in the database.
+ *
+ * - Maps to the "real_estate_types" table in Room.
+ * - Stores types of real estate, e.g., apartment, house, studio, etc.
+ * - Each property can reference a RealEstateTypeDTO via its realEstateTypeId field.
+ *
+ * Functions:
+ * - `toModel()`: Converts this DTO to a domain model `RealEstateType` using `RealEstateTypeMapper`.
+ */
 @Entity(
     tableName = "real_estate_types"
 )

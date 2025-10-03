@@ -3,6 +3,16 @@ package com.julien.mouellic.realestatemanager.data.mapper
 import com.julien.mouellic.realestatemanager.data.entity.LocationDTO
 import com.julien.mouellic.realestatemanager.domain.model.Location
 
+/**
+ * Mapper for converting between LocationDTO (data layer) and Location (domain layer).
+ *
+ * - `modelToDto(location: Location)`: Converts a domain model to a DTO for database operations.
+ * - `dtoToModel(dto: LocationDTO)`: Converts a DTO from the database to a domain model.
+ *
+ * Purpose:
+ * - Ensures separation of concerns between the data and domain layers.
+ * - Supports Clean Architecture by preventing direct dependency of domain models on the database entities.
+ */
 class LocationMapper {
 
     fun modelToDto(location: Location): LocationDTO {

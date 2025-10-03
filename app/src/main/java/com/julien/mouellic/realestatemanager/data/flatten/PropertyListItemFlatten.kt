@@ -6,6 +6,30 @@ import com.julien.mouellic.realestatemanager.domain.model.*
 import org.threeten.bp.Instant
 import java.io.Serializable
 
+/**
+ * Lightweight flattened representation of a Property for optimized queries.
+ *
+ * - Combines essential fields from multiple related entities:
+ *   - Property
+ *   - RealEstateType
+ *   - Location
+ *   - Agent
+ *   - Commodities
+ *   - Pictures
+ *
+ * - Used primarily for listing properties efficiently without loading full nested objects.
+ *
+ * Fields:
+ * - Property fields: id, name, description, surface, nbRooms, price, isSold, creation and entry/sale dates
+ * - RealEstateType: type
+ * - Location: street, postalCode, city, country, longitude, latitude
+ * - Agent: agentName
+ * - Commodities: commoditiesType, commoditiesIds
+ * - Picture: first picture as Bitmap (optional)
+ *
+ * Functions:
+ * - `toModel()`: Converts this flattened object into a full domain `Property` object.
+ */
 data class PropertyListItemFlatten(
     // from Property
     val id: Long,

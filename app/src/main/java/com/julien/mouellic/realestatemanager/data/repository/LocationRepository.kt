@@ -1,11 +1,22 @@
 package com.julien.mouellic.realestatemanager.data.repository
 
+import android.Manifest
+import android.os.Looper
+import androidx.annotation.RequiresPermission
 import androidx.annotation.WorkerThread
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.julien.mouellic.realestatemanager.data.dao.LocationDAO
 import com.julien.mouellic.realestatemanager.domain.model.Location
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
-class LocationRepository @Inject constructor(private val locationDAO: LocationDAO) {
+class LocationRepository @Inject constructor(
+    private val locationDAO: LocationDAO,
+) {
 
     /** INSERT **/
     @WorkerThread

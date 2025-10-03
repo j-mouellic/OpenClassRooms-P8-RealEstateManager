@@ -5,6 +5,23 @@ import com.julien.mouellic.realestatemanager.data.dao.CommodityDAO
 import com.julien.mouellic.realestatemanager.domain.model.Commodity
 import javax.inject.Inject
 
+/**
+ * Repository for managing Commodity entities.
+ *
+ * Provides methods to insert, update, delete, and retrieve commodities
+ * from the database through the CommodityDAO.
+ *
+ * The repository also provides `AsResult` variants of the methods, which
+ * wrap the operation in a `Result` object to safely handle exceptions.
+ *
+ * Usage of `AsResult`:
+ * - Prevents crashes if a database operation fails.
+ * - Returns `Result.success(value)` if the operation succeeds.
+ * - Returns `Result.failure(exception)` if an exception occurs.
+ *
+ * This approach allows the ViewModel or UseCase to handle errors gracefully
+ * without letting exceptions propagate to the UI layer.
+ */
 class CommodityRepository @Inject constructor(private val commodityDAO: CommodityDAO) {
 
     /** INSERT **/

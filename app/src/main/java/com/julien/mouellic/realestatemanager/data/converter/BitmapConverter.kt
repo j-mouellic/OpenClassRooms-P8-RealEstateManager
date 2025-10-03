@@ -6,6 +6,15 @@ import android.graphics.BitmapFactory
 import androidx.room.TypeConverter
 import java.io.ByteArrayOutputStream
 
+/**
+ * A Room type converter that handles the conversion
+ * between Bitmap objects and ByteArray for database storage.
+ *
+ * - `fromBitmap` converts a Bitmap into a ByteArray so it can be saved in the DB.
+ * - `toBitmap` converts a ByteArray back into a Bitmap when reading from the DB.
+ *
+ * Uses PNG format and keeps full quality when compressing.
+ */
 class BitmapConverter {
 
     companion object {

@@ -2,13 +2,30 @@ package com.julien.mouellic.realestatemanager.data.mapper
 
 
 import com.julien.mouellic.realestatemanager.data.entity.PropertyDTO
-import com.julien.mouellic.realestatemanager.data.entity.PropertyWithDetailsDTO
+import com.julien.mouellic.realestatemanager.data.flatten.PropertyWithDetails
 import com.julien.mouellic.realestatemanager.domain.model.Property
 
+/**
+ * Mapper for converting between PropertyWithDetails (data flatten) and Property (domain model).
+ *
+ * - PropertyWithDetails contains a full representation of a property with all related entities:
+ *   agent, location, real estate type, pictures, and commodities.
+ * - Useful for views like SHOW or EDIT where all property details are needed.
+ *
+ * Functions:
+ * - `modelToDto(property: Property)`: Converts a domain Property into a PropertyWithDetails flatten DTO,
+ *   including all related entities as DTOs.
+ * - `dtoToModel(dto: PropertyWithDetails)`: Converts a PropertyWithDetails flatten DTO back into a domain Property,
+ *   reconstructing all nested domain models (agent, location, realEstateType, pictures, commodities).
+ *
+ * Purpose:
+ * - Bridges the data layer and domain layer while keeping the full property details accessible.
+ * - Respects Clean Architecture by separating persistence objects (DTOs) from domain models.
+ */
 class PropertyWithDetailsMapper {
 
-    fun modelToDto(property: Property): PropertyWithDetailsDTO {
-        return PropertyWithDetailsDTO(
+    fun modelToDto(property: Property): PropertyWithDetails {
+        return PropertyWithDetails(
             propertyEntity = PropertyDTO(
                 id = property.id,
                 name = property.name,
@@ -37,7 +54,7 @@ class PropertyWithDetailsMapper {
         )
     }
 
-    fun dtoToModel(dto: PropertyWithDetailsDTO): Property {
+    fun dtoToModel(dto: PropertyWithDetails): Property {
         return Property(
             id = dto.propertyEntity.id,
             name = dto.propertyEntity.name,

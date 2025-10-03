@@ -1,66 +1,58 @@
 package com.julien.mouellic.realestatemanager.ui.form.converter
 
-
+/**
+ * FormConverter
+ *
+ * Purpose:
+ *  This class is part of the UI layer and is responsible for safely converting
+ *  form input strings into their corresponding Kotlin types (Int, Double, Boolean, etc.).
+ *
+ *  In UI forms, user inputs are always strings. This converter handles:
+ *   - Empty or blank strings → converted to null
+ *   - Proper type conversion (Int, Double, Long, Boolean, etc.)
+ *
+ *  This helps the ViewModel or use case layer to receive typed values without
+ *  worrying about parsing errors or blank inputs.
+ */
 class FormConverter {
 
     fun toString(value: String): String? {
-        return value.ifBlank {
-            null
-        }
+        return value.ifBlank { null }
     }
 
     fun toDouble(value: String): Double? {
-        return value.ifBlank {
-            null
-        }?.toDouble()
+        return value.ifBlank { null }?.toDouble()
     }
 
     fun toInt(value: String): Int? {
-        return value.ifBlank {
-            null
-        }?.toInt()
+        return value.ifBlank { null }?.toInt()
     }
 
     fun toLong(value: String): Long? {
-        return value.ifBlank {
-            null
-        }?.toLong()
+        return value.ifBlank { null }?.toLong()
     }
 
     fun toBoolean(value: String): Boolean? {
-        return value.ifBlank {
-            null
-        }?.toBoolean()
+        return value.ifBlank { null }?.toBoolean()
     }
 
     fun toFloat(value: String): Float? {
-        return value.ifBlank {
-            null
-        }?.toFloat()
+        return value.ifBlank { null }?.toFloat()
     }
 
     fun toByte(value: String): Byte? {
-        return value.ifBlank {
-            null
-        }?.toByte()
+        return value.ifBlank { null }?.toByte()
     }
 
     fun toShort(value: String): Short? {
-        return value.ifBlank {
-            null
-        }?.toShort()
+        return value.ifBlank { null }?.toShort()
     }
 
     fun toChar(value: String): Char? {
-        return value.ifBlank {
-            null
-        }?.first()
+        return value.ifBlank { null }?.first()
     }
 
     fun toByteArray(value: String): ByteArray? {
-        return value.ifBlank {
-            null
-        }?.toByteArray()
+        return value.ifBlank { null }?.toByteArray()
     }
-
 }

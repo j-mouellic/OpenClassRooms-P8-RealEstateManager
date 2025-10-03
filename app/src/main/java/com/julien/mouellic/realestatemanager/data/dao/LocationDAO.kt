@@ -8,6 +8,18 @@ import androidx.room.Query
 import androidx.room.Update
 import com.julien.mouellic.realestatemanager.data.entity.LocationDTO
 
+/**
+ * DAO (Data Access Object) for the Location entity.
+ * Handles database operations related to property locations.
+ *
+ * - `insert` adds a new location, ignoring conflicts.
+ * - `update` modifies an existing location.
+ * - `delete` removes a location.
+ * - `deleteUnused` removes locations that are not linked to any property.
+ * - `getAll` retrieves all locations from the database.
+ * - `getById` retrieves a single location by its ID.
+ * - `search` looks for a location by its street, number, postal code, city, and country.
+ */
 @Dao
 interface LocationDAO {
 

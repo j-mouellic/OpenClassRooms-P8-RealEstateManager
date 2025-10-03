@@ -28,7 +28,7 @@ kotlinx-coroutines = "1.7.3"
 roomCommon = "2.6.1"
 roomKtx = "2.6.1"
 
-threetenabp = "1.4.7"
+threetenab = "1.4.7"
 
 mapsCompose = "4.3.3"
 places = "4.1.0"
@@ -75,7 +75,7 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomKtx" }
 
-jakewharton-threetenabp = { group = "com.jakewharton.threetenabp", name = "threetenabp", version.ref = "threetenabp" }
+jakewharton-threetenabp = { group = "com.jakewharton.threetenabp", name = "threetenabp", version.ref = "threetenab" }
 
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }

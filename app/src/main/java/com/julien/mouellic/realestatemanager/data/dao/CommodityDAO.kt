@@ -8,6 +8,16 @@ import androidx.room.Query
 import androidx.room.Update
 import com.julien.mouellic.realestatemanager.data.entity.CommodityDTO
 
+/**
+ * DAO (Data Access Object) for the Commodity entity.
+ * Handles database operations related to commodities.
+ *
+ * - `insert` adds a new commodity, ignoring conflicts.
+ * - `update` modifies an existing commodity.
+ * - `delete` removes a commodity.
+ * - `getAll` retrieves all commodities from the database.
+ * - `getById` retrieves a single commodity by its ID.
+ */
 @Dao
 interface CommodityDAO {
 

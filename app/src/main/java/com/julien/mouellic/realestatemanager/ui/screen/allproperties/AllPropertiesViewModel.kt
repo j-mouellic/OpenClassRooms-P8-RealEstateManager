@@ -1,7 +1,10 @@
 package com.julien.mouellic.realestatemanager.ui.screen.allproperties
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
+import com.julien.mouellic.realestatemanager.data.repository.GPSRepository
 import com.julien.mouellic.realestatemanager.domain.model.Commodity
 import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 import com.julien.mouellic.realestatemanager.domain.usecase.commodity.GetAllCommoditiesUseCase
@@ -19,7 +22,8 @@ class AllPropertiesViewModel @Inject constructor(
     private val searchPropertiesUseCase: SearchPropertiesUseCase,
     private val getAllCommoditiesUseCase: GetAllCommoditiesUseCase,
     private val getAllEstateTypesUseCase: GetAllEstateTypesUseCase,
-    private val deletePropertyUseCase: DeletePropertyUseCase
+    private val deletePropertyUseCase: DeletePropertyUseCase,
+    private val gpsRepository: GPSRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AllPropertiesUiState>(
@@ -49,6 +53,7 @@ class AllPropertiesViewModel @Inject constructor(
         searchProperties()
         loadTypes()
         loadCommodities()
+        startLocationUpdates()
     }
 
     private fun loadTypes() {
@@ -80,6 +85,31 @@ class AllPropertiesViewModel @Inject constructor(
             } catch (e: Exception) {
                 println("🔹 Exception loading commodities: ${e.message}")
             }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        viewModelScope.launch {
+            gpsRepository.getLocationUpdate().collect{
+                    location ->
+                updateLocation(location)
+            }
+        }
+    }
+
+    private fun updateLocation(location: android.location.Location) {
+        when(val currentState = _uiState.value){
+            is AllPropertiesUiState.Success -> {
+                val newLocation = LatLng(location.latitude, location.longitude)
+                _uiState.value = currentState.copy(
+                    propertyGPSLocation = newLocation
+                )
+                println("🔹 GPS updated in Success state: $newLocation")
+            }
+            is AllPropertiesUiState.Error -> {}
+            is AllPropertiesUiState.IsLoading -> {}
+            is AllPropertiesUiState.SearchProperties -> {}
         }
     }
 

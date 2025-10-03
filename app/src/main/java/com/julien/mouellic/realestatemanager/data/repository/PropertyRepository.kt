@@ -8,6 +8,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * Repository for managing Property entities in the database.
+ *
+ * Responsibilities:
+ * - Insert, update, delete, and query properties.
+ * - Provide both suspend functions for one-time operations and Flow for real-time updates.
+ * - Provide `AsResult` wrappers to safely catch exceptions and avoid app crashes.
+ *
+ * Notes:
+ * - `Flow` methods allow observing changes to properties in real time.
+ * - `AsResult` methods wrap operations in Kotlin's `Result` type for safer error handling.
+ */
 class PropertyRepository @Inject constructor(private val propertyDAO: PropertyDAO) {
 
     /** INSERT **/

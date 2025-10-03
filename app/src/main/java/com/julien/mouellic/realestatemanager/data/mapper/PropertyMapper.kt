@@ -3,6 +3,22 @@ package com.julien.mouellic.realestatemanager.data.mapper
 import com.julien.mouellic.realestatemanager.data.entity.PropertyDTO
 import com.julien.mouellic.realestatemanager.domain.model.Property
 
+/**
+ * Mapper for converting between PropertyDTO (data layer) and Property (domain layer).
+ *
+ * Functions:
+ * - `modelToDto(property: Property)`: Converts a domain model Property into a DTO for database storage.
+ *   Only stores IDs for related entities (agent, location, realEstateType) to maintain foreign key relationships.
+ *
+ * - `dtoToModel(propertyDTO: PropertyDTO)`: Converts a PropertyDTO from the database into a domain model Property.
+ *   Related entities (agent, location, realEstateType, commodities, pictures) are set to null or empty,
+ *   as they are not loaded by this simple DTO mapping.
+ *
+ * Purpose:
+ * - Ensures separation between the data layer (Room database) and the domain layer (business logic).
+ * - Respects Clean Architecture by isolating domain models from persistence details.
+ * - Provides a simple way to store and retrieve Property data while handling foreign keys correctly.
+ */
 class PropertyMapper {
 
     fun modelToDto(property: Property): PropertyDTO {

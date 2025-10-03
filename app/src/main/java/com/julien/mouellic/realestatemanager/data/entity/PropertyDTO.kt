@@ -10,6 +10,21 @@ import com.julien.mouellic.realestatemanager.data.mapper.PropertyMapper
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import org.threeten.bp.Instant
 
+/**
+ * Data class representing a Property in the database.
+ *
+ * - Maps to the "properties" table in Room.
+ * - Establishes relationships with other entities via foreign keys:
+ *   1. `agent_id` → AgentDTO (nullable, sets to null if agent is deleted)
+ *   2. `location_id` → LocationDTO (nullable, sets to null if location is deleted)
+ *   3. `real_estate_type_id` → RealEstateTypeDTO (nullable, sets to null if type is deleted)
+ * - Indices are created on foreign key columns to optimize queries.
+ * - Contains property details like name, description, surface, number of rooms/bathrooms/bedrooms, price, and dates.
+ * - Tracks apartment number and sale status.
+ *
+ * Functions:
+ * - `toModel()`: Converts this DTO to a domain model `Property` using `PropertyMapper`.
+ */
 @Entity(
     tableName = "properties",
     foreignKeys = [

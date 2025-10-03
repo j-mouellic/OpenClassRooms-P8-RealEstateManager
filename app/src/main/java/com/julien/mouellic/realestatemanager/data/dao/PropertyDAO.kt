@@ -2,10 +2,25 @@ package com.julien.mouellic.realestatemanager.data.dao
 
 import androidx.room.*
 import com.julien.mouellic.realestatemanager.data.entity.PropertyDTO
-import com.julien.mouellic.realestatemanager.data.entity.PropertyWithDetailsDTO
 import com.julien.mouellic.realestatemanager.data.flatten.PropertyListItemFlatten
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * DAO for the Property table.
+ * Handles insertion, update, deletion, and querying of properties.
+ *
+ * - `insert` / `insertAll`: add one or more properties.
+ * - `update` / `updateSoldStatus`: modify property fields or sold status.
+ * - `delete` / `deleteAll`: remove one or more properties.
+ * - `getByIdRT` / `getAllRT` / `getAllNewerToOlderRT`: provide real-time Flow updates.
+ * - `getById` / `getAll` / `getAllNewerToOlder`: suspend functions for fetching data once.
+ *
+ * The `search` query:
+ * - Returns a list of `PropertyListItemFlatten`.
+ * - `PropertyListItemFlatten` is a lighter version of `PropertyDTO`, optimized for listing queries.
+ * - It includes main property info, type, location, agent name, first picture, and aggregated commodities.
+ * - Supports filtering by type, price, surface, number of rooms, and availability.
+ */
 @Dao
 interface PropertyDAO {
 
@@ -63,6 +78,7 @@ interface PropertyDAO {
     @Query(
         """
     SELECT 
+        -- SELECT & AS: choose which columns to retrieve and rename them to match DTO/Kotlin fields
         p.id AS id,
         p.name AS name,
         p.description AS description,
@@ -74,8 +90,10 @@ interface PropertyDAO {
         p.entry_date AS entryDate,
         p.sale_date AS saleDate,
 
+        -- LEFT JOIN with real_estate_types: include property even if type is missing
         t.name AS type,
 
+        -- LEFT JOIN with locations: include property even if location is missing
         l.street AS street,
         l.postal_code AS postalCode,
         l.city AS city,
@@ -83,19 +101,30 @@ interface PropertyDAO {
         l.longitude AS longitude,
         l.latitude AS latitude,
 
-        a.first_name || ' ' || a.last_name AS agentName,
+        -- LEFT JOIN with agents: include property even if agent is missing
+        a.first_name || ' ' || a.last_name AS agentName,  
 
-        COALESCE(GROUP_CONCAT(c.name, ','), '') AS commoditiesType,
-        COALESCE(GROUP_CONCAT(c.id, ','), '') AS commoditiesIds,
+        -- GROUP_CONCAT + COALESCE: combine multiple commodity names into a single comma-separated string
+        -- COALESCE ensures an empty string if no commodities exist
+        COALESCE(GROUP_CONCAT(c.name, ','), '') AS commoditiesType,    
 
-        pi.content AS picture
+        -- GROUP_CONCAT + COALESCE: combine multiple commodity IDs into a single comma-separated string
+        COALESCE(GROUP_CONCAT(c.id, ','), '') AS commoditiesIds,   
+
+        -- LEFT JOIN with pictures: include first picture (order = 0), NULL if none
+        pi.content AS picture  
+
     FROM properties p
+
+    -- LEFT JOINs: ensure that all properties appear even if related tables are missing
     LEFT JOIN real_estate_types t ON t.id = p.real_estate_type_id
     LEFT JOIN locations l ON l.id = p.location_id
     LEFT JOIN agents a ON a.id = p.agent_id
-    LEFT JOIN property_commodity pc ON pc.property_id = p.id 
+    LEFT JOIN property_commodity pc ON pc.property_id = p.id  
     LEFT JOIN commodities c ON c.id = pc.commodity_id
-    LEFT JOIN pictures pi ON pi.property_id = p.id AND pi.`order` = 0
+    LEFT JOIN pictures pi ON pi.property_id = p.id AND pi.`order` = 0  
+
+    -- WHERE: dynamic filters; if parameter is NULL, filter is ignored
     WHERE
         (:type IS NULL OR t.id = :type) AND
         (:minPrice IS NULL OR p.price >= :minPrice) AND
@@ -105,6 +134,8 @@ interface PropertyDAO {
         (:minNbRooms IS NULL OR p.numbers_of_rooms >= :minNbRooms) AND
         (:maxNbRooms IS NULL OR p.numbers_of_rooms <= :maxNbRooms) AND
         (:isAvailable IS NULL OR p.is_sold = :isAvailable)
+
+    -- GROUP BY: collapse multiple joined rows (commodities, pictures) into a single row per property
     GROUP BY p.id
     """
     )
@@ -118,5 +149,6 @@ interface PropertyDAO {
         maxNbRooms: Int?,
         isAvailable: Boolean?,
     ): List<PropertyListItemFlatten>
+
 
 }

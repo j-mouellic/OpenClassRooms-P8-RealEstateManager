@@ -2,6 +2,15 @@ package com.julien.mouellic.realestatemanager.data.converter
 
 import androidx.room.TypeConverter
 
+/**
+ * A Room type converter that handles conversion between
+ * List<String> and a single String for database storage.
+ *
+ * - `fromList` converts a List<String> into a single
+ *   comma-separated String to save in the DB.
+ * - `fromString` converts a comma-separated String back
+ *   into a List<String> when reading from the DB.
+ */
 class ListConverter {
 
     companion object {
