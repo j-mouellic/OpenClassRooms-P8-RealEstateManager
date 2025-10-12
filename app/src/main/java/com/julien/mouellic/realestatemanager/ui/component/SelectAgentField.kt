@@ -23,54 +23,63 @@ import com.julien.mouellic.realestatemanager.domain.model.Agent
 
 @Composable
 fun SelectAgentField(
-    allAgents: List<Agent>,
-    selectedAgent: Agent?,
-    onAgentSelected: (Agent) -> Unit
+    allAgents: List<Agent>,             // List of all available agents (data from DB or repository)
+    selectedAgent: Agent?,              // Currently selected agent (if any)
+    onAgentSelected: (Agent) -> Unit    // Callback triggered when an agent is chosen
 ) {
-    var isDropdownOpen by remember { mutableStateOf(false) }
-    var textFieldValue by remember { mutableStateOf(
-        selectedAgent?.let { it.lastName + " " + it.firstName } ?: "Select..."
-    ) }
+    // --- UI State management ---
+    var isDropdownOpen by remember { mutableStateOf(false) }   // Controls whether the dropdown is visible
+    var textFieldValue by remember {
+        mutableStateOf(
+            selectedAgent?.let { it.lastName + " " + it.firstName } ?: "Select..." // Displayed agent name or placeholder
+        )
+    }
 
+    // --- UI Layout container ---
     Column {
-        Text("Select Agent *")
+        // --- Field label ---
+        Text("Select Agent *")  // Label above the dropdown
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // --- Read-only text field acting as dropdown trigger ---
         OutlinedTextField(
-            value = textFieldValue,
-            onValueChange = { newText ->
+            value = textFieldValue,       // Shows selected agent name or placeholder
+            onValueChange = { newText ->  // Not editable, but must define handler
                 textFieldValue = newText
             },
             label = { Text("Agent") },
             modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
-            trailingIcon = {
+            readOnly = true,              // Prevent manual text input
+            trailingIcon = {              // Dropdown icon on the right
                 IconButton(onClick = { isDropdownOpen = !isDropdownOpen }) {
                     Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
                 }
             }
         )
 
+        // --- Dropdown menu showing list of agents ---
         DropdownMenu(
-            expanded = isDropdownOpen,
-            onDismissRequest = { isDropdownOpen = false },
+            expanded = isDropdownOpen,             // Visibility controlled by state
+            onDismissRequest = { isDropdownOpen = false }, // Close when clicked outside
             modifier = Modifier.fillMaxWidth()
         ) {
             allAgents.forEach { agent ->
                 DropdownMenuItem(
                     onClick = {
+                        // Update selected agent
                         onAgentSelected(agent)
                         textFieldValue = agent.lastName + " " + agent.firstName
-                        isDropdownOpen = false
+                        isDropdownOpen = false  // Close dropdown after selection
                     },
-                    text = { Text(agent.lastName + " " + agent.firstName) }
+                    text = { Text(agent.lastName + " " + agent.firstName) } // Display full name
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // --- Display currently selected agent ---
         if (selectedAgent != null) {
             Text("Selected Agent: ${selectedAgent.firstName + " " + selectedAgent.lastName}")
         }

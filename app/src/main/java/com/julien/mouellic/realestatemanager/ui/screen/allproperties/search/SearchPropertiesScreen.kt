@@ -37,14 +37,35 @@ import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllProperti
 import kotlin.Long
 
 
+/**
+ * Composable screen for searching properties with multiple filters.
+ *
+ * This screen allows users to specify search criteria such as:
+ * - Price range (min/max)
+ * - Surface range (min/max)
+ * - Number of rooms (min/max)
+ * - Availability status
+ * - Real estate type
+ * - Selected commodities
+ *
+ * It observes the [AllPropertiesViewModel] state and updates search parameters
+ * through the view model. On "Search" button click, it updates the search criteria
+ * in the view model and triggers a property search.
+ *
+ * @param navController Navigation controller for screen transitions.
+ * @param viewModel The shared [AllPropertiesViewModel] that holds properties data and search state.
+ */
 @Composable
 fun SearchPropertiesScreen(
     navController: NavHostController,
     viewModel: AllPropertiesViewModel
 ) {
+    // Collect the UI state from the ViewModel
     val uiState by viewModel.uiState.collectAsState()
-    val types by viewModel.allTypes.collectAsState()
-    val commodities by viewModel.allCommodities.collectAsState()
+    val types by viewModel.allTypes.collectAsState()  // All available estate types
+    val commodities by viewModel.allCommodities.collectAsState() // All available commodities
+
+    // Extract current search properties from UI state
     val searchProps = when (uiState) {
         is AllPropertiesUiState.Success -> (uiState as AllPropertiesUiState.Success).searchProperties
         is AllPropertiesUiState.IsLoading -> (uiState as AllPropertiesUiState.IsLoading).searchProperties
@@ -52,6 +73,7 @@ fun SearchPropertiesScreen(
         else -> AllPropertiesUiState.SearchProperties(null, null, null, null, null, null, null, null, null)
     }
 
+    // Local state for search filters
     var selectedType by remember { mutableStateOf(searchProps.type) }
     var minPrice by remember { mutableStateOf(searchProps.minPrice?.toString() ?: "") }
     var maxPrice by remember { mutableStateOf(searchProps.maxPrice?.toString() ?: "") }
@@ -65,9 +87,9 @@ fun SearchPropertiesScreen(
             searchProps.commodities ?: emptyList<Long>()
         )
     }
-
     var typeDropdownExpanded by remember { mutableStateOf(false) }
 
+    // Main scrollable column
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -79,7 +101,7 @@ fun SearchPropertiesScreen(
         Text("Search Properties", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Min Max Price
+        // --- Min/Max Price Input ---
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = minPrice,
@@ -97,7 +119,7 @@ fun SearchPropertiesScreen(
 
         PropertyDivider()
 
-        // --- Min/Max Surface
+        // --- Surface range slider ---
         RangeSliderInput(
             label = "Surface",
             value = minSurface.toFloat()..maxSurface.toFloat(),
@@ -112,7 +134,7 @@ fun SearchPropertiesScreen(
 
         PropertyDivider()
 
-        // --- Min/Max Rooms
+        // --- Rooms range slider ---
         RangeSliderInput(
             label = "Rooms",
             value = minRooms.toFloat()..maxRooms.toFloat(),
@@ -127,7 +149,7 @@ fun SearchPropertiesScreen(
 
         PropertyDivider()
 
-        // --- Is available toggle ---
+        // --- Availability toggle ---
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Is Available")
             Spacer(modifier = Modifier.width(8.dp))
@@ -136,7 +158,7 @@ fun SearchPropertiesScreen(
 
         PropertyDivider()
 
-        // --- Type
+        // --- Estate Type dropdown ---
         Text("Type")
         Box {
             Button(onClick = { typeDropdownExpanded = true }) {
@@ -180,11 +202,12 @@ fun SearchPropertiesScreen(
             }
         }
 
-        // --- Boutons
+        // --- Action buttons: Search & Reset ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Trigger search
             Button(
                 onClick = {
                     viewModel.updateSearchProperties(
@@ -208,6 +231,7 @@ fun SearchPropertiesScreen(
                 Text("Search")
             }
 
+            // Reset all filters
             Button(
                 onClick = {
                     selectedType = null
@@ -228,6 +252,16 @@ fun SearchPropertiesScreen(
     }
 }
 
+/**
+ * Composable for a labeled range slider input.
+ *
+ * @param label Label describing the range (e.g., "Surface", "Rooms").
+ * @param value The current selected range.
+ * @param onValueChange Lambda called when the range changes.
+ * @param minValue Minimum possible value of the slider.
+ * @param maxValue Maximum possible value of the slider.
+ * @param steps Number of discrete steps between min and max.
+ */
 @Composable
 fun RangeSliderInput(
     label: String,

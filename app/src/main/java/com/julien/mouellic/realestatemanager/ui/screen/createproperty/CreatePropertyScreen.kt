@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,32 +31,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.julien.mouellic.realestatemanager.ui.component.ImageSelector
 import com.julien.mouellic.realestatemanager.ui.component.InstantDateSelectionField
 import com.julien.mouellic.realestatemanager.ui.component.SelectAgentField
 import com.julien.mouellic.realestatemanager.ui.component.SelectCommoditiesField
 import com.julien.mouellic.realestatemanager.ui.component.SelectEstateTypeField
 import com.julien.mouellic.realestatemanager.ui.form.state.LocationFormState
-import com.julien.mouellic.realestatemanager.ui.screen.allproperties.AllPropertiesUiState
 
 const val CPS_TAG = "CreatePropertyScreen"
 const val CPS_MAX_PICTURES_TO_PICK = 10
 const val CPS_MAX_DESCRIPTION_LINES = 5
 
+/**
+ * Composable screen for creating or editing a property.
+ *
+ * @param propertyId Optional property ID for editing an existing property.
+ * @param viewModel The ViewModel that manages form state and logic.
+ *
+ * This screen observes the UI state from the ViewModel and displays the
+ * appropriate UI: loading, error, success, or the property form.
+ */
 @Composable
 fun CreatePropertyScreen(
-    propertyId : Long?,
+    propertyId: Long?,
     viewModel: CreatePropertyViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val uiState = viewModel.uiState.collectAsState().value
 
+    // Launcher for selecting multiple images from device gallery
     val pickMultipleMedia = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(CPS_MAX_PICTURES_TO_PICK)
     ) { uris ->
         if (uris.isNotEmpty()) {
             Log.d(CPS_TAG, "Number of items selected: ${uris.size}")
+
+            // Convert selected URIs to Bitmap objects
             val bitmaps = uris.mapNotNull { uri ->
                 try {
                     val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -71,17 +80,21 @@ fun CreatePropertyScreen(
                     null
                 }
             }
+
+            // Add selected images to the ViewModel
             viewModel.addPictures(bitmaps)
         } else {
             Log.d(CPS_TAG, "No media selected")
         }
     }
 
+    // Load property data if editing, and log UIState changes for debugging
     LaunchedEffect(uiState) {
         Log.d(CPS_TAG, "UIState changed: $uiState")
         viewModel.loadForEditing(propertyId)
     }
 
+    // Main scrollable column for the form
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         when (uiState) {
             is CreatePropertyUIState.IsLoading -> {
@@ -91,7 +104,12 @@ fun CreatePropertyScreen(
             }
 
             is CreatePropertyUIState.Success -> {
-                item { Text(if (propertyId == null) "Property created successfully with ID: ${uiState.propertyId}" else "Property updated successfully with ID: $propertyId") }
+                item {
+                    Text(
+                        if (propertyId == null) "Property created successfully with ID: ${uiState.propertyId}"
+                        else "Property updated successfully with ID: $propertyId"
+                    )
+                }
             }
 
             is CreatePropertyUIState.Error -> {
@@ -102,10 +120,10 @@ fun CreatePropertyScreen(
 
             is CreatePropertyUIState.FormState -> {
                 item {
-                    Text( if (propertyId == null) "Create Property" else "Edit Property")
-
+                    Text(if (propertyId == null) "Create Property" else "Edit Property")
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Property Name input field
                     OutlinedTextField(
                         value = uiState.name.value,
                         onValueChange = { viewModel.updateFieldValue("name", it) },
@@ -117,6 +135,7 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Description input field
                     OutlinedTextField(
                         value = uiState.description.value,
                         onValueChange = { viewModel.updateFieldValue("description", it) },
@@ -131,6 +150,7 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Surface input field
                     OutlinedTextField(
                         value = uiState.surface.value,
                         onValueChange = { viewModel.updateFieldValue("surface", it) },
@@ -142,39 +162,37 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Number of Rooms slider
                     NumberInputSlider(
                         label = "Number of Rooms",
                         value = uiState.nbRooms.value,
-                        onValueChange = { newValue ->
-                            viewModel.updateFieldValue("nbRooms", newValue)
-                        },
+                        onValueChange = { newValue -> viewModel.updateFieldValue("nbRooms", newValue) },
                         range = 0..20
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Number of Bedrooms slider
                     NumberInputSlider(
                         label = "Number of Bedrooms",
                         value = uiState.nbBedrooms.value,
-                        onValueChange = { newValue ->
-                            viewModel.updateFieldValue("nbBedrooms", newValue)
-                        },
+                        onValueChange = { newValue -> viewModel.updateFieldValue("nbBedrooms", newValue) },
                         range = 0..15
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Number of Bathrooms slider
                     NumberInputSlider(
                         label = "Number of Bathrooms",
                         value = uiState.nbBathrooms.value,
-                        onValueChange = { newValue ->
-                            viewModel.updateFieldValue("nbBathrooms", newValue)
-                        },
+                        onValueChange = { newValue -> viewModel.updateFieldValue("nbBathrooms", newValue) },
                         range = 0..15
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Price input field
                     OutlinedTextField(
                         value = uiState.price.value,
                         onValueChange = { viewModel.updateFieldValue("price", it) },
@@ -186,26 +204,25 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Entry Date selection
                     InstantDateSelectionField(
                         label = "Entry Date",
                         selectedInstant = uiState.entryDate.value,
-                        onDateSelected = { newInstant ->
-                            viewModel.updateFieldValue("entryDate", newInstant)
-                        }
+                        onDateSelected = { newInstant -> viewModel.updateFieldValue("entryDate", newInstant) }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Sale Date selection
                     InstantDateSelectionField(
                         label = "Sale Date",
                         selectedInstant = uiState.saleDate.value,
-
-                        onDateSelected = { newInstant ->
-                            viewModel.updateFieldValue("saleDate", newInstant)
-                        }
+                        onDateSelected = { newInstant -> viewModel.updateFieldValue("saleDate", newInstant) }
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Apartment Number input
                     OutlinedTextField(
                         value = uiState.apartmentNumber.value,
                         onValueChange = { viewModel.updateFieldValue("apartmentNumber", it) },
@@ -217,35 +234,41 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Location fields (street, number, postal code, city, country, lat/lng)
                     LocationFields(
                         location = uiState.location,
                         onLocationChange = { field, value -> viewModel.updateFieldValue(field, value) },
-                        onUseCurrentLocationClick = { viewModel.useCurrentLocation() }
+                        onUseCurrentLocationClick = { viewModel.useCurrentLocation() } // Option to autofill current GPS
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SelectAgentField(uiState.allAgents, uiState.selectedAgent){ agent ->
+                    // Agent selection dropdown
+                    SelectAgentField(uiState.allAgents, uiState.selectedAgent) { agent ->
                         viewModel.updateSelectedAgent(agent)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SelectEstateTypeField(uiState.allEstateTypes, uiState.selectedEstateType){
+                    // Real Estate Type selection dropdown
+                    SelectEstateTypeField(uiState.allEstateTypes, uiState.selectedEstateType) {
                         viewModel.updateSelectedEstateType(it)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SelectCommoditiesField(uiState.allCommodities, uiState.selectedCommodities){
+                    // Commodities selection dropdown
+                    SelectCommoditiesField(uiState.allCommodities, uiState.selectedCommodities) {
                         viewModel.updateSelectedCommodities(it)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Button to pick images
                     Button(
-                        onClick = { pickMultipleMedia.launch(PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        onClick = {
+                            pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Select Pictures")
@@ -253,6 +276,7 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Display selected images and allow reordering or deletion
                     ImageSelector(
                         uiState = uiState,
                         onDelete = { picture -> viewModel.deletePicture(picture) },
@@ -262,9 +286,9 @@ fun CreatePropertyScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Save property button (enabled only if form is valid)
                     Button(
-                        onClick = {
-                            viewModel.saveProperty() },
+                        onClick = { viewModel.saveProperty() },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = uiState.isFormValid
                     ) {
@@ -276,6 +300,9 @@ fun CreatePropertyScreen(
     }
 }
 
+/**
+ * Slider for numeric input fields such as number of rooms, bedrooms, or bathrooms.
+ */
 @Composable
 fun NumberInputSlider(
     label: String,
@@ -283,7 +310,6 @@ fun NumberInputSlider(
     onValueChange: (String) -> Unit,
     range: IntRange = 0..15
 ) {
-
     val intValue = value.toIntOrNull() ?: range.first
     var sliderPosition by remember { mutableFloatStateOf(intValue.toFloat()) }
 
@@ -310,6 +336,13 @@ fun NumberInputSlider(
     }
 }
 
+/**
+ * Composable for editing the location fields of a property.
+ *
+ * @param location Current location state.
+ * @param onLocationChange Callback when a location field changes.
+ * @param onUseCurrentLocationClick Optional callback to autofill current GPS location.
+ */
 @Composable
 fun LocationFields(
     location: LocationFormState,
@@ -317,6 +350,7 @@ fun LocationFields(
     onUseCurrentLocationClick: (() -> Unit)? = null
 ) {
     Column {
+        // Street number
         OutlinedTextField(
             value = location.number.value,
             onValueChange = { onLocationChange("location.number", it) },
@@ -328,6 +362,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Street name
         OutlinedTextField(
             value = location.street.value,
             onValueChange = { onLocationChange("location.street", it) },
@@ -339,6 +374,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Postal code
         OutlinedTextField(
             value = location.postalCode.value,
             onValueChange = { onLocationChange("location.postalCode", it) },
@@ -350,6 +386,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // City
         OutlinedTextField(
             value = location.city.value,
             onValueChange = { onLocationChange("location.city", it) },
@@ -361,6 +398,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Country
         OutlinedTextField(
             value = location.country.value,
             onValueChange = { onLocationChange("location.country", it) },
@@ -372,6 +410,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Longitude
         OutlinedTextField(
             value = location.longitude.value,
             onValueChange = { onLocationChange("location.longitude", it) },
@@ -383,6 +422,7 @@ fun LocationFields(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Latitude
         OutlinedTextField(
             value = location.latitude.value,
             onValueChange = { onLocationChange("location.latitude", it) },
@@ -392,6 +432,7 @@ fun LocationFields(
             supportingText = { location.latitude.errorMessage?.let { Text(it) } }
         )
 
+        // Optional button to autofill current location
         onUseCurrentLocationClick?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Button(

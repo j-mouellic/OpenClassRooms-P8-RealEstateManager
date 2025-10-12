@@ -17,6 +17,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+/**
+ * ViewModel for the "All Properties" screen && "Search Properties" screen
+ *
+ * Handles both the main properties listing (list/map view) and the search/filter functionality.
+ * It communicates with use cases to fetch properties, estate types, and commodities, and exposes
+ * the UI state as a [StateFlow] for the Compose UI to observe.
+ *
+ * Responsibilities include:
+ * - Loading all properties according to current search/filter parameters.
+ * - Loading all estate types and commodities for the search view filters.
+ * - Handling deletion of properties.
+ * - Updating the user's GPS location for map views.
+ */
 @HiltViewModel
 class AllPropertiesViewModel @Inject constructor(
     private val searchPropertiesUseCase: SearchPropertiesUseCase,
@@ -26,6 +40,10 @@ class AllPropertiesViewModel @Inject constructor(
     private val gpsRepository: GPSRepository
 ) : ViewModel() {
 
+    /**
+     * The main UI state observed by the Compose UI.
+     * Can be Loading, Success, Error, or holding current search/filter parameters.
+     */
     private val _uiState = MutableStateFlow<AllPropertiesUiState>(
         AllPropertiesUiState.IsLoading(
             AllPropertiesUiState.SearchProperties(
@@ -43,19 +61,28 @@ class AllPropertiesViewModel @Inject constructor(
     )
     val uiState: StateFlow<AllPropertiesUiState> = _uiState
 
+    /** List of all available real estate types for the search filter. */
     private val _allTypes = MutableStateFlow<List<RealEstateType>>(emptyList())
     val allTypes: StateFlow<List<RealEstateType>> = _allTypes
 
+    /** List of all available commodities for the search filter. */
     private val _allCommodities = MutableStateFlow<List<Commodity>>(emptyList())
     val allCommodities: StateFlow<List<Commodity>> = _allCommodities
 
     init {
+        // Initialize main properties list and GPS updates
         searchProperties()
+        startLocationUpdates()
+
+        // Load data for search/filter view
         loadTypes()
         loadCommodities()
-        startLocationUpdates()
     }
 
+    /**
+     * Loads all estate types from the domain layer for the search filters.
+     * Updates [_allTypes] state flow.
+     */
     private fun loadTypes() {
         viewModelScope.launch {
             try {
@@ -72,6 +99,10 @@ class AllPropertiesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Loads all commodities from the domain layer for the search filters.
+     * Updates [_allCommodities] state flow.
+     */
     private fun loadCommodities() {
         viewModelScope.launch {
             try {
@@ -88,6 +119,10 @@ class AllPropertiesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Starts GPS location updates by collecting from the [GPSRepository].
+     * Updates the propertyGPSLocation in [AllPropertiesUiState.Success] when available.
+     */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
         viewModelScope.launch {
@@ -98,6 +133,10 @@ class AllPropertiesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the current GPS location in the UI state.
+     * @param location The latest location from GPS.
+     */
     private fun updateLocation(location: android.location.Location) {
         when(val currentState = _uiState.value){
             is AllPropertiesUiState.Success -> {
@@ -113,6 +152,9 @@ class AllPropertiesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Retrieves the current search/filter parameters from the UI state.
+     */
     private fun getSearchProperties(): AllPropertiesUiState.SearchProperties {
         val searchProps = when (val uiState = _uiState.value) {
             is AllPropertiesUiState.IsLoading -> uiState.searchProperties
@@ -124,6 +166,10 @@ class AllPropertiesViewModel @Inject constructor(
         return searchProps
     }
 
+    /**
+     * Updates the search/filter parameters in the UI state.
+     * @param newSearchProperties The new search criteria to apply.
+     */
     fun updateSearchProperties(newSearchProperties: AllPropertiesUiState.SearchProperties) {
         println("🔹 updateSearchProperties called with: $newSearchProperties")
         _uiState.value = when (val currentState = _uiState.value) {
@@ -135,6 +181,10 @@ class AllPropertiesViewModel @Inject constructor(
         println("🔹 uiState after update: ${_uiState.value}")
     }
 
+    /**
+     * Executes a search for properties based on current search/filter parameters.
+     * Updates [_uiState] to Loading, then Success or Error depending on the result.
+     */
     fun searchProperties() {
         val searchProperties = getSearchProperties()
         println("🔹 searchProperties() called with: $searchProperties")
@@ -142,33 +192,30 @@ class AllPropertiesViewModel @Inject constructor(
         _uiState.value = AllPropertiesUiState.IsLoading(searchProperties)
 
         viewModelScope.launch {
-            try {
-                val properties = searchPropertiesUseCase(
-                    type = searchProperties.type,
-                    minPrice = searchProperties.minPrice,
-                    maxPrice = searchProperties.maxPrice,
-                    minSurface = searchProperties.minSurface,
-                    maxSurface = searchProperties.maxSurface,
-                    minNbRooms = searchProperties.minNbRooms,
-                    maxNbRooms = searchProperties.maxNbRooms,
-                    isAvailable = searchProperties.isAvailable,
-                    commodities = searchProperties.commodities
-                )
-                println("🔹 searchPropertiesUseCase returned ${properties.size} properties")
-
+            searchPropertiesUseCase(
+                type = searchProperties.type,
+                minPrice = searchProperties.minPrice,
+                maxPrice = searchProperties.maxPrice,
+                minSurface = searchProperties.minSurface,
+                maxSurface = searchProperties.maxSurface,
+                minNbRooms = searchProperties.minNbRooms,
+                maxNbRooms = searchProperties.maxNbRooms,
+                isAvailable = searchProperties.isAvailable,
+                commodities = searchProperties.commodities
+            ).collect { properties ->
+                println("🔹 Flow emitted ${properties.size} properties")
                 _uiState.value = AllPropertiesUiState.Success(properties, searchProperties)
-                println("🔹 uiState updated to Success with ${properties.size} properties")
-            } catch (exception: Exception) {
-                println("🔹 searchProperties failed: ${exception.message}")
-                _uiState.value = AllPropertiesUiState.Error(exception.message, searchProperties)
             }
         }
     }
 
+    /**
+     * Deletes a property by ID and refreshes the properties list.
+     * @param propertyId The ID of the property to delete.
+     */
     fun deleteProperty(propertyId: Long) {
         viewModelScope.launch {
             deletePropertyUseCase(propertyId)
-            searchProperties()
         }
     }
 }

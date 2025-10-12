@@ -38,33 +38,42 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstantDateSelectionField(
-    label: String,
-    selectedInstant: Instant?,
-    onDateSelected: (Instant?) -> Unit
+    label: String,                     // Text label displayed above the input field
+    selectedInstant: Instant?,         // Currently selected date as an Instant (nullable)
+    onDateSelected: (Instant?) -> Unit // Callback triggered when a new date is chosen
 ) {
+    // --- Set up date formatting ---
+    // Define the timezone and date format used to display the date in the text field.
     val zoneId = ZoneId.systemDefault()
     val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         .withZone(zoneId)
 
+    // --- Convert Instant to formatted String for display ---
     val formattedDate = selectedInstant?.let {
-        DateUtils.format(it)
+        DateUtils.format(it) // Use app’s DateUtils to respect user’s chosen format (EU/US)
     } ?: ""
 
+    // --- Initialize the date picker with the current or selected date ---
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedInstant?.toEpochMilli() ?: Calendar.getInstance().timeInMillis
+        initialSelectedDateMillis = selectedInstant?.toEpochMilli()
+            ?: Calendar.getInstance().timeInMillis
     )
 
+    // --- Controls whether the date picker popup is currently visible ---
     var showDatePicker by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    // --- Main UI container ---
+    Box(modifier = Modifier.fillMaxWidth()) {
+
+        // --- Read-only text field showing the currently selected date ---
         OutlinedTextField(
             value = formattedDate,
-            onValueChange = { },
-            label = { Text(label) },
+            onValueChange = { }, // Field is read-only, no manual typing allowed
+            label = { Text(label) }, // Display the given label above the field
             readOnly = true,
             trailingIcon = {
+                // --- Calendar icon button ---
+                // When pressed, toggles the date picker popup visibility
                 IconButton(onClick = { showDatePicker = !showDatePicker }) {
                     Icon(
                         imageVector = Icons.Default.DateRange,
@@ -77,38 +86,44 @@ fun InstantDateSelectionField(
                 .height(64.dp)
         )
 
+        // --- Popup for date selection ---
         if (showDatePicker) {
             Popup(
-                onDismissRequest = { showDatePicker = false },
+                onDismissRequest = { showDatePicker = false }, // Close popup when clicking outside
                 alignment = Alignment.TopStart
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .offset(y = 64.dp)
+                        .offset(y = 64.dp) // Position below the text field
                         .shadow(elevation = 4.dp)
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(16.dp)
                 ) {
+
+                    // --- Actual Date Picker Component ---
                     DatePicker(
                         state = datePickerState,
-                        showModeToggle = false
+                        showModeToggle = false // Simplify: only calendar mode
                     )
 
+                    // --- Row of action buttons below the date picker ---
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 16.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
+                        // Cancel button → closes popup without changes
                         TextButton(
-                            onClick = {
-                                showDatePicker = false
-                            }
+                            onClick = { showDatePicker = false }
                         ) {
                             Text("Cancel")
                         }
+
                         Spacer(modifier = Modifier.width(2.dp))
+
+                        // Reset button → clears selected date (sets it to null)
                         TextButton(
                             onClick = {
                                 showDatePicker = false
@@ -117,7 +132,10 @@ fun InstantDateSelectionField(
                         ) {
                             Text("Reset")
                         }
+
                         Spacer(modifier = Modifier.width(2.dp))
+
+                        // OK button → confirms date and sends Instant to parent composable
                         TextButton(
                             onClick = {
                                 datePickerState.selectedDateMillis?.let { millis ->
@@ -135,3 +153,4 @@ fun InstantDateSelectionField(
         }
     }
 }
+

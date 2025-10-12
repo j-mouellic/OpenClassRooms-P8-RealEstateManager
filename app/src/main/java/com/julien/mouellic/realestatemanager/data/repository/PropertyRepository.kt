@@ -214,7 +214,7 @@ class PropertyRepository @Inject constructor(private val propertyDAO: PropertyDA
 
     /** SEARCH **/
     @WorkerThread
-    suspend fun search(
+    suspend fun searchOnce(
         type: Long?,
         minPrice: Double?,
         maxPrice: Double?,
@@ -227,7 +227,7 @@ class PropertyRepository @Inject constructor(private val propertyDAO: PropertyDA
     ): List<Property> {
 
         return propertyDAO
-            .search(type, minPrice, maxPrice, minSurface, maxSurface, minNbRooms, maxNbRooms, isAvailable)
+            .searchOnce(type, minPrice, maxPrice, minSurface, maxSurface, minNbRooms, maxNbRooms, isAvailable)
             .filter { property ->
                 if (commodities.isNullOrEmpty()) {
                     true
@@ -236,5 +236,35 @@ class PropertyRepository @Inject constructor(private val propertyDAO: PropertyDA
                 }
             }
             .map { it.toModel() }
+    }
+
+    /** SEARCH **/
+    @WorkerThread
+    fun searchAsFlow(
+        type: Long?,
+        minPrice: Double?,
+        maxPrice: Double?,
+        minSurface: Double?,
+        maxSurface: Double?,
+        minNbRooms: Int?,
+        maxNbRooms: Int?,
+        isAvailable: Boolean?,
+        commodities: List<Long>?
+    ): Flow<List<Property>> {
+
+        return propertyDAO
+            .search(type, minPrice, maxPrice, minSurface, maxSurface, minNbRooms, maxNbRooms, isAvailable)
+            .map { list ->
+                list
+                    .filter { property ->
+                        if (commodities.isNullOrEmpty()) {
+                            true
+                        } else {
+                            // ⚠️ ici il faut que property.commoditiesIds soit une List<Long> déjà parsée depuis ta String SQL
+                            property.commoditiesIds.any { commodities.contains(it) }
+                        }
+                    }
+                    .map { it.toModel() }
+            }
     }
 }

@@ -24,33 +24,42 @@ import com.julien.mouellic.realestatemanager.domain.model.RealEstateType
 
 @Composable
 fun SelectEstateTypeField(
-    allEstateTypes: List<RealEstateType>,
-    selectedEstateType: RealEstateType?,
-    onEstateTypeSelected: (RealEstateType) -> Unit
+    allEstateTypes: List<RealEstateType>,              // All available estate types (from DB or repository)
+    selectedEstateType: RealEstateType?,               // Currently selected estate type (nullable)
+    onEstateTypeSelected: (RealEstateType) -> Unit     // Callback triggered when user selects one
 ) {
-    var isDropdownOpen by remember { mutableStateOf(false) }
-    var textFieldValue by remember { mutableStateOf(
-        selectedEstateType?.name ?: "Select..."
-    ) }
+    // --- UI state ---
+    var isDropdownOpen by remember { mutableStateOf(false) } // Controls dropdown visibility
+    var textFieldValue by remember {
+        mutableStateOf(selectedEstateType?.name ?: "Select...") // Initial displayed value
+    }
 
+    // --- Main container ---
     Column {
+        // --- Label ---
         Text("Select Estate Type *")
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // --- Read-only text field that opens the dropdown when clicked ---
         OutlinedTextField(
             value = textFieldValue,
-            onValueChange = { newText -> textFieldValue = newText },
+            onValueChange = { newText -> textFieldValue = newText }, // Not used since field is read-only
             label = { Text("Estate Type") },
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
             trailingIcon = {
+                // --- Dropdown toggle icon ---
                 IconButton(onClick = { isDropdownOpen = !isDropdownOpen }) {
-                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null
+                    )
                 }
             }
         )
 
+        // --- Dropdown list containing all estate types ---
         DropdownMenu(
             expanded = isDropdownOpen,
             onDismissRequest = { isDropdownOpen = false },
@@ -59,9 +68,10 @@ fun SelectEstateTypeField(
             allEstateTypes.forEach { estateType ->
                 DropdownMenuItem(
                     onClick = {
-                        onEstateTypeSelected(estateType)
-                        textFieldValue = estateType.name
-                        isDropdownOpen = false
+                        // When user clicks one:
+                        onEstateTypeSelected(estateType)  // Notify parent composable
+                        textFieldValue = estateType.name  // Update text field
+                        isDropdownOpen = false            // Close menu
                     },
                     text = { Text(estateType.name) }
                 )
@@ -70,8 +80,10 @@ fun SelectEstateTypeField(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // --- Display current selection below ---
         if (selectedEstateType != null) {
             Text("Selected Estate Type: ${selectedEstateType.name}")
         }
     }
 }
+

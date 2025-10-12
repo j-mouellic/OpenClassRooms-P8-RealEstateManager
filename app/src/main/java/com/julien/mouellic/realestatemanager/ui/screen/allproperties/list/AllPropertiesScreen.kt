@@ -78,6 +78,21 @@ import com.julien.mouellic.realestatemanager.ui.screen.detailedproperty.Detailed
 import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
 import com.julien.mouellic.realestatemanager.utils.ResponsiveUtils
 
+
+/**
+ * Composable screen that displays all properties in either a list or map view.
+ *
+ * It observes the [AllPropertiesViewModel] state and dynamically updates the UI:
+ * - TabRow allows switching between "List View" and "Map View".
+ * - In List View, properties are shown as a scrollable list with editable, deletable, or viewable items.
+ * - In Map View, properties are displayed as markers on a Google Map.
+ * - FloatingActionButton allows resetting all search filters.
+ *
+ * On tablets, List View shows a split-screen with the list on the left and the detailed property on the right.
+ *
+ * @param navController Navigation controller for screen transitions.
+ * @param viewModel The shared [AllPropertiesViewModel] that holds properties data and search state.
+ */
 @Composable
 fun AllPropertiesScreen(
     navController: NavHostController,
@@ -91,6 +106,8 @@ fun AllPropertiesScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
+
+            // Tabs for List and Map views
             val tabTitles = listOf("List View", "Map View")
             val tabIcons = listOf(Icons.Default.List, Icons.Default.Map)
 
@@ -140,8 +157,9 @@ fun AllPropertiesScreen(
                 }
             }
 
+            // --- Content for selected tab
             when (selectedTab) {
-                0 -> {
+                0 -> { // List View
                     when (uiState) {
                         is AllPropertiesUiState.IsLoading -> {
                             LoadingScreen()
@@ -150,6 +168,7 @@ fun AllPropertiesScreen(
                         is AllPropertiesUiState.Success -> {
                             if (isTablet) {
 
+                                // Split-screen layout for tablets
                                 var selectedPropertyId by remember { mutableStateOf<Long?>(null) }
 
                                 Row(modifier = Modifier.fillMaxSize()) {
@@ -184,6 +203,7 @@ fun AllPropertiesScreen(
                                     }
                                 }
                             } else {
+                                // Standard list view for phones
                                 PropertyListView(
                                     properties = (uiState as AllPropertiesUiState.Success).listProperties,
                                     onPropertyEditClick = { propertyId ->
@@ -209,7 +229,7 @@ fun AllPropertiesScreen(
                     }
                 }
 
-                1 -> {
+                1 -> { // Map View
                     when (uiState) {
                         is AllPropertiesUiState.IsLoading -> {
                             LoadingScreen()
@@ -236,6 +256,7 @@ fun AllPropertiesScreen(
             }
         }
 
+        // --- Floating action button to reset filters ---
         FloatingActionButton(
             onClick = {
                 viewModel.updateSearchProperties(
@@ -265,7 +286,14 @@ fun AllPropertiesScreen(
     }
 }
 
-
+/**
+ * LazyColumn displaying a list of properties.
+ *
+ * @param properties List of [Property] objects to display.
+ * @param onPropertyEditClick Lambda called when the edit button is clicked.
+ * @param onPropertyShowClick Lambda called when the show button is clicked.
+ * @param onPropertyDeleteClick Lambda called when the delete button is clicked.
+ */
 @Composable
 fun PropertyListView(
     properties: List<Property>,
@@ -285,7 +313,14 @@ fun PropertyListView(
     }
 }
 
-
+/**
+ * Single property item displayed in the list with image, details, and action buttons.
+ *
+ * @param property The [Property] to display.
+ * @param onPropertyEditClick Lambda called when the edit icon is clicked.
+ * @param onPropertyShowClick Lambda called when the show icon is clicked.
+ * @param onPropertyDeleteClick Lambda called when the delete icon is clicked.
+ */
 @Composable
 fun PropertyListItem(
     property: Property,
@@ -293,13 +328,14 @@ fun PropertyListItem(
     onPropertyShowClick: (Long) -> Unit,
     onPropertyDeleteClick: (Long) -> Unit
 ) {
+    // Layout a row with main card and action buttons
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .padding(8.dp)
     ) {
-        // ---------- Property Card ----------
+        // Property card containing image, details, price, rooms, etc.
         Card(
             modifier = Modifier
                 .fillMaxHeight()
@@ -502,6 +538,13 @@ fun PropertyListItem(
     )
 }
 
+/**
+ * Composable displaying properties on a Google Map.
+ *
+ * @param properties List of properties to display as markers.
+ * @param currentLocation Optional current location of the user to center the map.
+ * @param onPropertyShowClick Lambda called when a marker is clicked.
+ */
 @Composable
 fun PropertyMapView(
     properties: List<Property> = emptyList(),
@@ -524,6 +567,7 @@ fun PropertyMapView(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
+
         properties.forEach { property ->
             val lat = property.location?.latitude ?: return@forEach
             val lng = property.location?.longitude ?: return@forEach

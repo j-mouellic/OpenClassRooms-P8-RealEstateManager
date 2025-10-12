@@ -14,10 +14,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel for the Loan Calculator screen.
+ *
+ * Responsibilities:
+ * 1. Hold the current form state for loan calculation inputs (loan amount, interest rate, term, down payment).
+ * 2. Validate user input using [FormValidator].
+ * 3. Convert string inputs to numeric types using [FormConverter].
+ * 4. Trigger calculation of monthly payments using [LoanCalculatorUseCase].
+ * 5. Expose the current UI state as [LoanCalculatorUIState].
+ *
+ * The UI observes [uiState] to reactively display:
+ * - the input form,
+ * - a loading state,
+ * - calculation results,
+ * - or validation/error messages.
+ */
 @HiltViewModel
 class LoanCalculatorViewModel @Inject constructor(
     private val loanCalculatorUseCase: LoanCalculatorUseCase,
-    private val formValidator : FormValidator,
+    private val formValidator: FormValidator,
     private val formConverter: FormConverter,
     private val formFormater: FormFormater
 ) : ViewModel() {
@@ -25,6 +41,7 @@ class LoanCalculatorViewModel @Inject constructor(
     companion object {
         const val TAG = "LoanCalculatorViewModel"
 
+        // Validation constants for form fields
         const val LOAN_AMOUNT_IS_REQUIRED = true
         const val LOAN_AMOUNT_MIN = 1.0
         const val LOAN_AMOUNT_MAX = 10000000.0
@@ -42,6 +59,7 @@ class LoanCalculatorViewModel @Inject constructor(
         const val DOWN_PAYMENT_MAX = 10000000.0
     }
 
+    // Holds the current UI state
     private val _uiState = MutableStateFlow<LoanCalculatorUIState>(
         LoanCalculatorUIState.FormState(
             loanAmount = FieldState("100000", true),
@@ -53,6 +71,7 @@ class LoanCalculatorViewModel @Inject constructor(
     )
     val uiState: StateFlow<LoanCalculatorUIState> = _uiState
 
+    /** Returns the current form state regardless of UI state wrapper */
     private fun getFormState(): LoanCalculatorUIState.FormState {
         return when (val currentState = _uiState.value) {
             is LoanCalculatorUIState.IsLoading -> currentState.formState
@@ -62,14 +81,28 @@ class LoanCalculatorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates a field value in the form and validates it.
+     *
+     * @param fieldName name of the field to update ("loanAmount", "interestRate", "loanTerm", "downPayment")
+     * @param newValue new string value entered by the user
+     */
     fun updateFieldValue(fieldName: String, newValue: String) {
         viewModelScope.launch {
             val currentState = getFormState()
             val updatedState = when (fieldName) {
-                "loanAmount" -> currentState.copy(loanAmount = formValidator.validateDouble(newValue, LOAN_AMOUNT_MIN, LOAN_AMOUNT_MAX, LOAN_AMOUNT_IS_REQUIRED))
-                "interestRate" -> currentState.copy(interestRate = formValidator.validateDouble(newValue,INTEREST_RATE_MIN,INTEREST_RATE_MAX,INTEREST_RATE_IS_REQUIRED))
-                "loanTerm" -> currentState.copy(loanTerm = formValidator.validateDouble(newValue, LOAN_TERM_MIN, LOAN_TERM_MAX, LOAN_TERM_IS_REQUIRED))
-                "downPayment" -> currentState.copy(downPayment = formValidator.validateDouble(newValue, DOWN_PAYMENT_MIN, DOWN_PAYMENT_MAX, DOWN_PAYMENT_IS_REQUIRED))
+                "loanAmount" -> currentState.copy(
+                    loanAmount = formValidator.validateDouble(newValue, LOAN_AMOUNT_MIN, LOAN_AMOUNT_MAX, LOAN_AMOUNT_IS_REQUIRED)
+                )
+                "interestRate" -> currentState.copy(
+                    interestRate = formValidator.validateDouble(newValue, INTEREST_RATE_MIN, INTEREST_RATE_MAX, INTEREST_RATE_IS_REQUIRED)
+                )
+                "loanTerm" -> currentState.copy(
+                    loanTerm = formValidator.validateDouble(newValue, LOAN_TERM_MIN, LOAN_TERM_MAX, LOAN_TERM_IS_REQUIRED)
+                )
+                "downPayment" -> currentState.copy(
+                    downPayment = formValidator.validateDouble(newValue, DOWN_PAYMENT_MIN, DOWN_PAYMENT_MAX, DOWN_PAYMENT_IS_REQUIRED)
+                )
                 else -> currentState
             }
             val isFormValid = isFormValid(updatedState)
@@ -77,7 +110,8 @@ class LoanCalculatorViewModel @Inject constructor(
         }
     }
 
-    private fun validateAll(){
+    /** Validates all fields in the form */
+    private fun validateAll() {
         var currentState = getFormState()
 
         currentState = currentState.copy(
@@ -91,7 +125,8 @@ class LoanCalculatorViewModel @Inject constructor(
         _uiState.value = currentState
     }
 
-    private fun isFormValid(state : LoanCalculatorUIState.FormState): Boolean {
+    /** Returns true if all form fields are valid */
+    private fun isFormValid(state: LoanCalculatorUIState.FormState): Boolean {
         Log.d(TAG, "loanAmount: ${state.loanAmount.isValid}")
         Log.d(TAG, "interestRate: ${state.interestRate.isValid}")
         Log.d(TAG, "loanTerm: ${state.loanTerm.isValid}")
@@ -102,6 +137,14 @@ class LoanCalculatorViewModel @Inject constructor(
                 state.downPayment.isValid
     }
 
+    /**
+     * Triggered when the "Calculate" button is clicked.
+     *
+     * Steps:
+     * 1. Validate all fields.
+     * 2. If the form is valid, calculate the monthly loan payment.
+     * 3. Update the UI state to show result or error.
+     */
     fun onCalculateClicked() {
         validateAll()
         val formState = getFormState()
@@ -124,7 +167,6 @@ class LoanCalculatorViewModel @Inject constructor(
                     )
 
                     _uiState.value = LoanCalculatorUIState.Success(monthlyPayment, formState)
-
                 } catch (e: Exception) {
                     _uiState.value = LoanCalculatorUIState.Error(e.message, formState)
                 }

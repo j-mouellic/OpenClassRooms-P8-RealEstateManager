@@ -55,38 +55,41 @@ import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
 import com.julien.mouellic.realestatemanager.utils.DateUtils
 import kotlinx.coroutines.launch
 
+// --- Main Composable: App() ---
+// This is the root composable for the entire application.
+// It sets up the navigation system, the top app bar, the bottom navigation bar,
+// and a drawer (side menu) for user settings such as currency and date format.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-    val navController = rememberNavController()
-    val drawerState = rememberDrawerState(
-        initialValue = DrawerValue.Closed
-    )
-    val scope = rememberCoroutineScope()
+    val navController = rememberNavController() // Navigation controller
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer state
+    val scope = rememberCoroutineScope() // Coroutine scope for drawer animations
 
+    // ModalNavigationDrawer allows sliding a side menu (the Drawer)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                DrawerContent()
+                DrawerContent() // Content inside the drawer (settings)
             }
         }
     ) {
+        // Scaffold provides a layout structure with a TopAppBar, content area, and BottomBar
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text("Real Estate Manager")
-                    },
+                    title = { Text("Real Estate Manager") },
                     navigationIcon = {
-                        IconButton(onClick = {  }) {
+                        // Menu button to open/close the drawer
+                        IconButton(onClick = { }) {
                             Icon(
                                 Icons.Filled.Menu,
                                 contentDescription = "Open Left Menu Future Usage",
                                 modifier = Modifier.clickable {
                                     scope.launch {
                                         drawerState.apply {
-                                            if(isClosed) open() else {
+                                            if (isClosed) open() else {
                                                 close()
                                                 navController.navigate("all_properties")
                                             }
@@ -99,9 +102,11 @@ fun App() {
                 )
             },
             bottomBar = {
+                // Bottom navigation bar for switching between main screens
                 BottomNavigationBar(navController)
             }
         ) { paddingValues ->
+            // Main navigation host displaying the selected screen
             PropertyNavHost(
                 navController = navController,
                 modifier = Modifier.padding(paddingValues)
@@ -110,6 +115,9 @@ fun App() {
     }
 }
 
+// --- DrawerContent ---
+// This composable displays the left-side drawer (settings menu).
+// It lets the user choose between two currencies (€, $) and two date formats (EU / US).
 @Composable
 fun DrawerContent(modifier: Modifier = Modifier) {
     var selectedCurrency by remember { mutableStateOf(CurrencyUtils.currency) }
@@ -126,18 +134,21 @@ fun DrawerContent(modifier: Modifier = Modifier) {
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // --- Section Currency ---
+        // --- Currency Section ---
         Text("Choose currency:")
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Option Euro
+        // Radio buttons allow switching between Euro and Dollar.
+        // When the user selects one, we update CurrencyUtils.currency globally.
+
+        // Option: Euro
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
                     selectedCurrency = 0
-                    CurrencyUtils.currency = 0
+                    CurrencyUtils.currency = 0 // Updates the app-wide currency setting
                 }
                 .padding(vertical = 4.dp)
         ) {
@@ -152,7 +163,7 @@ fun DrawerContent(modifier: Modifier = Modifier) {
             Text("Euro (€)")
         }
 
-        // Option Dollar
+        // Option: Dollar
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -177,11 +188,14 @@ fun DrawerContent(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // --- Section Date Format ---
+        // --- Date Format Section ---
         Text("Choose date format:")
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Option EU
+        // The following RadioButtons toggle the app's date format globally
+        // by modifying DateUtils.formatType.
+
+        // Option: European (dd/MM/yyyy)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -203,7 +217,7 @@ fun DrawerContent(modifier: Modifier = Modifier) {
             Text("European (dd/MM/yyyy)")
         }
 
-        // Option US
+        // Option: US (yyyy/MM/dd)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -227,13 +241,17 @@ fun DrawerContent(modifier: Modifier = Modifier) {
     }
 }
 
-
+// --- Navigation Data Model ---
+// Represents a single navigation item (label + icon) for the bottom bar.
 data class NavigationItem(
     val longLabel: String,
     val shortLabel: String,
     val icon: ImageVector
 )
 
+// --- Bottom Navigation Bar ---
+// Displays navigation buttons at the bottom of the app.
+// Each button navigates to a specific screen (list, create, search, loan calculator).
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
@@ -244,19 +262,18 @@ fun BottomNavigationBar(navController: NavHostController) {
     )
 
     val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp > 600
+    val isTablet = configuration.screenWidthDp > 600 // Tablet layout detection
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    BottomNavigation{
+    BottomNavigation {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-
                 val routeName = item.longLabel.replace(" ", "_").lowercase()
                 val selected = currentRoute == routeName
 
@@ -282,7 +299,8 @@ fun BottomNavigationBar(navController: NavHostController) {
                         Icon(
                             item.icon,
                             contentDescription = item.longLabel,
-                            tint = if (selected) Color.Black else Color.Gray)
+                            tint = if (selected) Color.Black else Color.Gray
+                        )
                     }
                 )
             }
@@ -290,13 +308,19 @@ fun BottomNavigationBar(navController: NavHostController) {
     }
 }
 
+// --- Simple Wrappers for BottomNavigation ---
 @Composable
 fun BottomNavigation(content: @Composable () -> Unit) {
     content()
 }
 
 @Composable
-fun BottomNavigationItem(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit, icon: @Composable () -> Unit) {
+fun BottomNavigationItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    icon: @Composable () -> Unit
+) {
     TextButton(onClick = onClick) {
         icon()
         label()

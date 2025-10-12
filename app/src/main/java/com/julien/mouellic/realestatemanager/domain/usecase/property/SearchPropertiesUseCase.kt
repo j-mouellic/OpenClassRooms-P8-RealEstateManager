@@ -2,6 +2,7 @@ package com.julien.mouellic.realestatemanager.domain.usecase.property
 
 import com.julien.mouellic.realestatemanager.data.repository.PropertyRepository
 import com.julien.mouellic.realestatemanager.domain.model.Property
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
@@ -14,21 +15,36 @@ class SearchPropertiesUseCase @Inject constructor(
     private val propertyRepository: PropertyRepository
 ) {
     /**
-     * Executes the use case.
+     * Executes the use case reactively.
      *
-     * @param type Optional property type filter (by real estate type ID)
-     * @param minPrice Minimum property price filter
-     * @param maxPrice Maximum property price filter
-     * @param minSurface Minimum surface area filter
-     * @param maxSurface Maximum surface area filter
-     * @param minNbRooms Minimum number of rooms filter
-     * @param maxNbRooms Maximum number of rooms filter
-     * @param isAvailable Filter by availability (sold or not)
-     * @param commodities Optional list of commodity IDs to filter properties having at least one of them
-     *
-     * @return List of properties matching the given criteria
+     * Returns a Flow that emits the list of properties matching the given filters,
+     * and automatically updates whenever the database content changes.
      */
-    suspend operator fun invoke(
+    operator fun invoke(
+        type: Long? = null,
+        minPrice: Double? = null,
+        maxPrice: Double? = null,
+        minSurface: Double? = null,
+        maxSurface: Double? = null,
+        minNbRooms: Int? = null,
+        maxNbRooms: Int? = null,
+        isAvailable: Boolean? = null,
+        commodities: List<Long>? = null
+    ): Flow<List<Property>> {
+        return propertyRepository.searchAsFlow(
+            type,
+            minPrice,
+            maxPrice,
+            minSurface,
+            maxSurface,
+            minNbRooms,
+            maxNbRooms,
+            isAvailable,
+            commodities
+        )
+    }
+
+    suspend fun searchOnce(
         type: Long? = null,
         minPrice: Double? = null,
         maxPrice: Double? = null,
@@ -39,7 +55,7 @@ class SearchPropertiesUseCase @Inject constructor(
         isAvailable: Boolean? = null,
         commodities: List<Long>? = null
     ): List<Property> {
-        return propertyRepository.search(
+        return propertyRepository.searchOnce(
             type,
             minPrice,
             maxPrice,

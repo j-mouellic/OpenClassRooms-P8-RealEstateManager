@@ -38,6 +38,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import org.threeten.bp.Instant
 
+/**
+ * ViewModel responsible for handling the creation and editing of a property.
+ *
+ * Responsibilities include:
+ * - Managing form state for property fields (name, description, surface, rooms, price, location, etc.)
+ * - Validating form fields using [FormValidator]
+ * - Converting and formatting field values using [FormConverter] and [FormFormater]
+ * - Fetching auxiliary data (estate types, agents, commodities)
+ * - Managing pictures (add, delete, reorder)
+ * - Saving the property via [InsertEasyPropertyUseCase] or [UpdateEasyPropertyUseCase]
+ * - Interfacing with GPS via [GPSRepository] to autofill location coordinates
+ */
 @HiltViewModel
 class CreatePropertyViewModel @Inject constructor(
     private val insertEasyPropertyUseCase: InsertEasyPropertyUseCase,
@@ -55,6 +67,7 @@ class CreatePropertyViewModel @Inject constructor(
     companion object {
         private const val TAG = "CreatePropertyViewModel"
 
+        // Validation constants for fields
         private const val NAME_IS_REQUIRED = true
         private const val NAME_MIN = 1
         private const val NAME_MAX = 100
@@ -129,6 +142,7 @@ class CreatePropertyViewModel @Inject constructor(
         private const val CONTENT_MAX_HEIGHT = 1000
     }
 
+    // --- UI State ---
     private val _uiState = MutableStateFlow<CreatePropertyUIState>(
         CreatePropertyUIState.FormState(
             name = FieldState("", true),
@@ -156,11 +170,15 @@ class CreatePropertyViewModel @Inject constructor(
     )
     val uiState: StateFlow<CreatePropertyUIState> = _uiState
 
+    // --- Initialization ---
     init {
-        startLocationUpdates()
-        loadData()
+        startLocationUpdates() // Start collecting GPS updates
+        loadData() // Load auxiliary data (agents, estate types, commodities)
     }
 
+    /**
+     * Starts collecting GPS updates and updates the form state with current coordinates.
+     */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
         viewModelScope.launch {
@@ -171,6 +189,9 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the internal GPS location in the form state.
+     */
     private fun updateLocation(location: android.location.Location) {
         when(val currentState = _uiState.value){
             is CreatePropertyUIState.Success -> {}
@@ -186,6 +207,9 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Autofills the form's latitude and longitude fields with the current GPS coordinates.
+     */
     fun useCurrentLocation() {
         val currentState = getFormState()
         val gpsLocation = currentState.propertyGPSLocation
@@ -200,6 +224,9 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Loads auxiliary data required to populate dropdowns or selections.
+     */
     private fun loadData() {
         viewModelScope.launch {
             val estateTypes = getAllEstateTypesUseCase()
@@ -220,6 +247,9 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Retrieves the current form state, even when UIState is loading or error.
+     */
     private fun getFormState(): CreatePropertyUIState.FormState {
         return when (val currentState = _uiState.value) {
             is CreatePropertyUIState.IsLoading -> currentState.formState
@@ -229,6 +259,23 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    // ----------------------------
+    // ---    Field updates
+    // ----------------------------
+    /**
+     * Updates the value of a date/time field (Instant) and validates it.
+     *
+     * This function takes a field name and a new Instant value, validates it
+     * using the FormValidator, and updates the corresponding InstantFieldState
+     * in the current form state.
+     *
+     * After validation, it also checks if the entire form is valid and updates
+     * the overall form validity in the UI state.
+     *
+     * @param fieldName The name of the date field to update ("entryDate" or "saleDate").
+     * @param instant The new Instant value to set for the field.
+     * @throws IllegalArgumentException if the fieldName does not match a known date field.
+     */
     fun updateFieldValue(fieldName: String, instant: Instant?){
         viewModelScope.launch {
             val currentState = getFormState()
@@ -242,6 +289,20 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the value of a form field and validates it.
+     *
+     * This function takes a field name and a new string value, validates the value
+     * using the FormValidator, and updates the corresponding FieldState or
+     * LocationFormState in the current form state.
+     *
+     * After validation, it also checks if the entire form is valid and updates
+     * the overall form validity in the UI state.
+     *
+     * @param fieldName The name of the field to update. Can include nested fields like "location.city".
+     * @param newValue The new string value to set for the field.
+     * @throws IllegalArgumentException if the fieldName does not match any known field.
+     */
     fun updateFieldValue(fieldName: String, newValue: String) {
         viewModelScope.launch {
             val currentState = getFormState()
@@ -268,6 +329,22 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Validates all fields of the property creation form.
+     *
+     * This function performs the following actions:
+     * 1. Retrieves the current form state.
+     * 2. Validates each field according to its constraints defined in the companion object constants:
+     *    - Name, description, surface, number of rooms, bathrooms, bedrooms, price, apartment number.
+     *    - Entry and sale dates.
+     *    - Location fields: street, number, postal code, city, country, longitude, latitude.
+     * 3. Uses the FormValidator to apply min/max/value constraints and required checks for each field.
+     * 4. Updates the form state with validated values.
+     * 5. Recomputes the overall form validity using [isFormValid].
+     * 6. Updates the [_uiState] with the new validated form state.
+     *
+     * This ensures that all fields reflect their latest validation status before saving or submitting the property.
+     */
     private fun validateAll(){
         var currentState = getFormState()
 
@@ -297,6 +374,20 @@ class CreatePropertyViewModel @Inject constructor(
         _uiState.value = currentState
     }
 
+    /**
+     * Checks whether the current property form is valid.
+     *
+     * This function evaluates all individual form fields and selections:
+     * - Validates textual fields like name, description, and location fields.
+     * - Validates numeric fields like surface, number of rooms, bathrooms, bedrooms, price, and apartment number.
+     * - Validates date fields such as entryDate and saleDate.
+     * - Checks that an agent and a real estate type have been selected.
+     *
+     * The function also logs the validation status of each field for debugging purposes.
+     *
+     * @param updatedState The current state of the form to validate.
+     * @return True if all fields are valid and required selections are made; false otherwise.
+     */
     private fun isFormValid(updatedState: CreatePropertyUIState. FormState): Boolean {
         Log.d(TAG, "name: ${updatedState.name.isValid}")
         Log.d(TAG, "description: ${updatedState.description.isValid}")
@@ -339,6 +430,21 @@ class CreatePropertyViewModel @Inject constructor(
                 updatedState.selectedEstateType != null
     }
 
+    /**
+     * Saves the property form to the database.
+     *
+     * This function performs the following steps:
+     * 1. Validates all form fields by calling [validateAll].
+     * 2. Checks if the form is valid.
+     * 3. If the form is valid:
+     *    - Creates a [Property] object from the current form state.
+     *    - If in edit mode (editing an existing property), updates the property using [updateEasyPropertyUseCase].
+     *    - Otherwise, inserts a new property using [insertEasyPropertyUseCase].
+     *    - Updates the [_uiState] to [CreatePropertyUIState.Success] with the property ID.
+     * 4. If an exception occurs during saving, updates the [_uiState] to [CreatePropertyUIState.Error] with the error message.
+     *
+     * This function runs asynchronously within the [viewModelScope].
+     */
     fun saveProperty() {
         viewModelScope.launch {
             validateAll()
@@ -391,6 +497,14 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Adds a list of bitmaps as pictures to the property form.
+     * Each bitmap is resized to a maximum content size and thumbnail size,
+     * and assigned an order based on its position in the input list.
+     * After adding, the pictures are reordered and the form validity is recalculated.
+     *
+     * @param bitmaps List of Bitmap objects to add to the property.
+     */
     fun addPictures(bitmaps: List<Bitmap>) {
         viewModelScope.launch {
             val newPictures = bitmaps.mapIndexed { index, bitmap ->
@@ -420,6 +534,12 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Deletes a picture from the property form.
+     * The picture list is updated, and the form validity is recalculated.
+     *
+     * @param picture The Picture object to remove from the property.
+     */
     fun deletePicture(picture: Picture) {
         viewModelScope.launch {
             var currentState = getFormState()
@@ -430,6 +550,10 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Logs the order of all pictures in the form for debugging purposes.
+     * Only used for internal debugging and does not modify the state.
+     */
     private fun logPicturesOrder(){
         // DEBUG ONLY
         val currentState = getFormState()
@@ -448,6 +572,13 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Moves a picture one position up in the picture list.
+     * If the picture is already the first one, the function does nothing.
+     * After moving, the pictures are reordered and the updated order is logged.
+     *
+     * @param picture The Picture object to move up.
+     */
     fun movePictureUp(picture: Picture) {
         viewModelScope.launch {
             val currentState = getFormState()
@@ -465,6 +596,13 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+    * Moves a picture one position down in the picture list.
+    * If the picture is already the last one, the function does nothing.
+    * After moving, the pictures are reordered and the updated order is logged.
+    *
+    * @param picture The Picture object to move down.
+    */
     fun movePictureDown(picture: Picture) {
         viewModelScope.launch {
             val currentState = getFormState()
@@ -482,6 +620,10 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the currently selected agent in the property form.
+     * After updating, the form validity is re-evaluated and the UI state is updated.
+     */
     fun updateSelectedAgent(agent: Agent) {
         viewModelScope.launch {
             var currentState = getFormState()
@@ -491,6 +633,10 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the currently selected real estate type in the property form.
+     * After updating, the form validity is re-evaluated and the UI state is updated.
+     */
     fun updateSelectedEstateType(it: RealEstateType) {
         viewModelScope.launch {
             var currentState = getFormState()
@@ -500,6 +646,10 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the list of selected commodities in the property form.
+     * After updating, the form validity is re-evaluated and the UI state is updated.
+     */
     fun updateSelectedCommodities(it: List<Commodity>) {
         viewModelScope.launch {
             var currentState = getFormState()
@@ -509,6 +659,15 @@ class CreatePropertyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Loads an existing property for editing into the form.
+     *
+     * If a propertyId is provided and it differs from the currently loaded one,
+     * this function fetches the property details using [getPropertyWithDetailsUseCase],
+     * populates the form fields, and preserves any existing GPS location.
+     *
+     * @param propertyId The ID of the property to load for editing. If null, nothing happens.
+     */
     private var editModeIDLoaded = 0L
     fun loadForEditing(propertyId: Long?) {
         if (propertyId != null && propertyId != editModeIDLoaded) {

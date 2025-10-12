@@ -32,28 +32,39 @@ import com.julien.mouellic.realestatemanager.domain.model.Property
 import com.julien.mouellic.realestatemanager.utils.CurrencyUtils
 import com.julien.mouellic.realestatemanager.utils.DateUtils
 
+/**
+ * DetailedPropertyScreen
+ *
+ * Composable that displays the detailed view of a single property.
+ * It observes [DetailedPropertyViewModel.uiState] to reactively update
+ * the UI when data is loaded, loading, or an error occurs.
+ *
+ * @param propertyId ID of the property to display. Can be null.
+ * @param viewModel ViewModel providing property data and business logic.
+ */
 @Composable
 fun DetailedPropertyScreen(
     propertyId: Long?,
     viewModel: DetailedPropertyViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState() // Observe the UI state
 
+    // Trigger property loading whenever propertyId changes
     LaunchedEffect(propertyId) {
         propertyId?.let { viewModel.loadProperty(it) }
     }
 
+    // Render UI based on the current state
     when (uiState) {
         is DetailedPropertyUIState.NoPropertySelected -> {
+            // Empty state UI
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFFF0F0F0)),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.Home,
                         contentDescription = "No property selected",
@@ -72,20 +83,36 @@ fun DetailedPropertyScreen(
         }
 
         is DetailedPropertyUIState.Loading -> {
+            // Loading state UI
             Text("Loading property...")
         }
 
         is DetailedPropertyUIState.Success -> {
+            // Display property details
             val property = (uiState as DetailedPropertyUIState.Success).property
             PropertyDetailContent(property = property)
         }
 
         is DetailedPropertyUIState.Error -> {
+            // Error state UI
             Text("Error: ${(uiState as DetailedPropertyUIState.Error).message}")
         }
     }
 }
 
+/**
+ * Displays the full detailed content of a property.
+ *
+ * Splits the property details into multiple sections:
+ * - Title
+ * - Images
+ * - Dates
+ * - Location
+ * - Description
+ * - Features
+ * - Commodities/Environment
+ * - Agent contact
+ */
 @Composable
 fun PropertyDetailContent(property: Property) {
     val scrollState = rememberScrollState()
@@ -106,6 +133,9 @@ fun PropertyDetailContent(property: Property) {
     }
 }
 
+/**
+ * Shows property name, price, and sale status.
+ */
 @Composable
 fun PropertyTitleSection(property: Property) {
     Text(
@@ -129,6 +159,9 @@ fun PropertyTitleSection(property: Property) {
     Divider()
 }
 
+/**
+ * Displays property images in a 2-column grid.
+ */
 @Composable
 fun PropertyImagesSection(property: Property) {
     if (!property.pictures.isNullOrEmpty()) {
@@ -159,6 +192,9 @@ fun PropertyImagesSection(property: Property) {
     }
 }
 
+/**
+ * Displays entry and sale dates of the property.
+ */
 @Composable
 fun PropertyDateSection(property: Property) {
     val entryDate = property.entryDate?.let { DateUtils.format(it) } ?: "-"
@@ -169,19 +205,16 @@ fun PropertyDateSection(property: Property) {
         "Dates :",
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
-    Text(
-        text = "Entry Date : $entryDate",
-        style = MaterialTheme.typography.bodyMedium
-    )
+    Text("Entry Date : $entryDate", style = MaterialTheme.typography.bodyMedium)
     Spacer(modifier = Modifier.height(4.dp))
-    Text(
-        text = "Sale Date : $saleDate",
-        style = MaterialTheme.typography.bodyMedium
-    )
+    Text("Sale Date : $saleDate", style = MaterialTheme.typography.bodyMedium)
     Spacer(modifier = Modifier.height(12.dp))
     Divider()
 }
 
+/**
+ * Displays property address and a static map.
+ */
 @Composable
 fun PropertyLocationSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -190,6 +223,8 @@ fun PropertyLocationSection(property: Property) {
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
     Spacer(modifier = Modifier.height(4.dp))
+
+    // Build full address string
     val address = property.location?.let { loc ->
         buildString {
             loc.streetNumber?.let { append(it).append(" ") }
@@ -205,6 +240,7 @@ fun PropertyLocationSection(property: Property) {
     if (address.isNotBlank()) {
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Display static Google Map for the address
         val encodedAddress = java.net.URLEncoder.encode(address, "UTF-8")
         val mapUrl = "https://maps.googleapis.com/maps/api/staticmap?" +
                 "center=$encodedAddress" +
@@ -213,15 +249,11 @@ fun PropertyLocationSection(property: Property) {
                 "&markers=color:red|$encodedAddress" +
                 "&key=${BuildConfig.MAPS_API_KEY}"
 
-        Log.d("PropertyLocationSection", "MAPS_API_KEY = ${BuildConfig.MAPS_API_KEY}")
-
         AsyncImage(
             model = mapUrl,
             contentDescription = "Property location map",
             modifier = Modifier.fillMaxWidth().height(180.dp),
-            contentScale = ContentScale.Crop,
-            onSuccess = { Log.d("PropertyLocationSection", "Image loaded successfully") },
-            onError = { it.result.throwable?.let { e -> Log.e("PropertyLocationSection", "Error loading image", e) } }
+            contentScale = ContentScale.Crop
         )
     }
 
@@ -229,7 +261,9 @@ fun PropertyLocationSection(property: Property) {
     Divider()
 }
 
-
+/**
+ * Displays the property description.
+ */
 @Composable
 fun PropertyDescriptionSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -243,6 +277,9 @@ fun PropertyDescriptionSection(property: Property) {
     Divider()
 }
 
+/**
+ * Displays key property features: surface, rooms, bedrooms, bathrooms.
+ */
 @Composable
 fun PropertyFeaturesSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -261,6 +298,9 @@ fun PropertyFeaturesSection(property: Property) {
     Divider()
 }
 
+/**
+ * Displays the property environment/commodities.
+ */
 @Composable
 fun PropertyCommoditiesSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -278,6 +318,9 @@ fun PropertyCommoditiesSection(property: Property) {
     Divider()
 }
 
+/**
+ * Displays the agent contact information.
+ */
 @Composable
 fun PropertyAgentSection(property: Property) {
     Spacer(modifier = Modifier.height(8.dp))

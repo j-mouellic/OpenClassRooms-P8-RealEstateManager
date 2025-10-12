@@ -19,27 +19,36 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoadingScreen() {
+    // --- Main container ---
+    // Box fills the entire screen, centers its content both vertically and horizontally.
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxSize()         // Takes all available space
+            .padding(16.dp),        // Adds padding around the edges
+        contentAlignment = Alignment.Center // Centers children content
     ) {
+        // --- Inner column for vertical layout ---
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally // Center content horizontally
         ) {
+
+            // --- Circular loading spinner ---
             CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                strokeWidth = 4.dp,
-                color = Color(0xFF000000)
+                modifier = Modifier.size(48.dp),  // Fixed size for the spinner
+                strokeWidth = 4.dp,               // Thickness of the progress ring
+                color = Color(0xFF000000)         // Black color for visibility
             )
+
+            // --- Small space between spinner and text ---
             Spacer(modifier = Modifier.height(16.dp))
+
+            // --- "Loading..." text label ---
             Text(
                 text = "Loading...",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium // Slightly bold for emphasis
                 ),
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground // Adapts to theme
             )
         }
     }
