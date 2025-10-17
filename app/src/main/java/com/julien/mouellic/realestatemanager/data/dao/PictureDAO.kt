@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PictureDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(picture: PictureDTO): Long
 
     @Update
