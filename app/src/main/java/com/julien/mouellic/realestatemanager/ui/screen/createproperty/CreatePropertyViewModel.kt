@@ -480,6 +480,11 @@ class CreatePropertyViewModel @Inject constructor(
                     pictures = currentState.pictures
                 )
 
+                Log.d(TAG, "💎 Commodities avant save:")
+                property.commodities.forEachIndexed { index, c ->
+                    Log.d(TAG, "   #$index -> id=${c.id}, name=${c.name}")
+                }
+
                 _uiState.value = CreatePropertyUIState.IsLoading(formState = getFormState())
 
                 try {
@@ -694,6 +699,14 @@ class CreatePropertyViewModel @Inject constructor(
 
                     val currentState = getFormState()
                     val preservedGps = currentState.propertyGPSLocation
+                    val matchedCommodities = getFormState().allCommodities.filter { commodity ->
+                        property.commodities.any { it.id == commodity.id }
+                    }
+
+                    val propertyCommodityIds = property.commodities.map { it.id }
+                    val matchedCommodityIds = matchedCommodities.map { it.id }
+                    Log.d("CreatePropertyScreen", "Property commodities IDs: $propertyCommodityIds")
+                    Log.d("CreatePropertyScreen", "Matched commodities IDs: $matchedCommodityIds")
 
                     _uiState.value = currentState.copy(
                         name = FieldState(property.name, true),
@@ -709,7 +722,7 @@ class CreatePropertyViewModel @Inject constructor(
                         location = location!!,
                         selectedAgent = property.agent,
                         selectedEstateType = property.realEstateType,
-                        selectedCommodities = property.commodities,
+                        selectedCommodities = matchedCommodities,
                         pictures = property.pictures.sortedBy { it.order }.mapIndexed { index, picture ->
                             picture.copy(order = index)
                         },

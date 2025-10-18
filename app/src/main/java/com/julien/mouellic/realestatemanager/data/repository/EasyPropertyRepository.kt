@@ -28,6 +28,8 @@ class EasyPropertyRepository @Inject constructor(
     private val propertyCommodityCrossRefDAO: PropertyCommodityCrossRefDAO
 ) {
 
+    private val TAG = "EasyPropertyRepository"
+
     /**
      * Inserts a property along with its related entities.
      * Manages location reuse, commodity associations, and property pictures.
@@ -36,9 +38,13 @@ class EasyPropertyRepository @Inject constructor(
     suspend fun insert(property: Property): Long {
         var propertyCopy = property.copy()
 
+        Log.d(TAG, "---- INSERT PROPERTY START ----")
+        Log.d(TAG, "Incoming property: ${property.name}, id=${property.id}")
+
         // --- Handle location ---
         if(property.location != null) {
             val location = property.location
+            Log.d(TAG, "Handling location: $location")
             // Search for an existing location to avoid duplicates
             val locationID = locationDAO.search(location.street, location.streetNumber, location.postalCode, location.city, location.country ?: "")
             if(locationID == null) {
@@ -53,9 +59,13 @@ class EasyPropertyRepository @Inject constructor(
 
         // --- Insert property ---
         val propertyId = propertyDAO.insert(propertyCopy.toDTO())
+        Log.d(TAG, "Inserted property with id=$propertyId")
 
         // --- Handle commodities (N:N relationship) ---
         propertyCopy.commodities.forEach { commodity ->
+
+            Log.d(TAG, "Processing commodity: ${commodity.name} (id=${commodity.id})")
+
             val commodityId = if (commodity.id != null) {
                 val existing = commodityDAO.getById(commodity.id)
                 existing?.id ?: commodityDAO.insert(commodity.toDTO())
@@ -112,11 +122,28 @@ class EasyPropertyRepository @Inject constructor(
         propertyDAO.update(propertyCopy.toDTO())
 
         // --- Update commodities (N:N) ---
-        propertyCommodityCrossRefDAO.deleteByPropertyId(propertyId)
         propertyCopy.commodities.forEach { commodity ->
-            val commodityId = commodityDAO.insert(commodity.toDTO())
+            Log.d(TAG, "Commodity before delete: id=${commodity.id}, name=${commodity.name}")
+        }
+
+        Log.d(TAG, "Clearing old commodities for propertyId=$propertyId")
+        propertyCommodityCrossRefDAO.deleteByPropertyId(propertyId)
+
+        propertyCopy.commodities.forEach { commodity ->
+            val commodityId = if (commodity.id != null && commodity.id > 0) {
+                commodity.id
+            } else {
+                commodityDAO.insert(commodity.toDTO())
+            }
+            Log.d(TAG, "Re-inserting commodity crossRef: propertyId=$propertyId, commodityId=$commodityId")
             propertyCommodityCrossRefDAO.insert(PropertyCommodityCrossRefDTO(propertyId, commodityId))
         }
+
+       /* propertyCopy.commodities.forEach { commodity ->
+            val commodityId = commodityDAO.insert(commodity.toDTO())
+            Log.d(TAG, "Re-inserting commodity crossRef: propertyId=$propertyId, commodityId=$commodityId")
+            propertyCommodityCrossRefDAO.insert(PropertyCommodityCrossRefDTO(propertyId, commodityId))
+        } */
 
         // --- Update pictures (1:N) ---
         pictureDAO.deleteByPropertyId(propertyId)

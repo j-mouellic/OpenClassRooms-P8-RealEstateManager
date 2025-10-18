@@ -1,5 +1,6 @@
 package com.julien.mouellic.realestatemanager.domain.usecase.property
 
+import android.util.Log
 import com.julien.mouellic.realestatemanager.data.repository.PropertyWithDetailsRepository
 import com.julien.mouellic.realestatemanager.domain.model.Property
 import javax.inject.Inject
@@ -19,6 +20,16 @@ class GetPropertyWithDetailsUseCase @Inject constructor(
      * @return The property with all details, or null if not found.
      */
     suspend operator fun invoke(propertyId: Long): Property? {
-        return propertyWithDetailsRepository.getById(propertyId)
+        val property = propertyWithDetailsRepository.getById(propertyId)
+
+        // --- Logging commodities IDs for debugging ---
+        property?.commodities?.let { commodities ->
+            val ids = commodities.mapNotNull { it.id }
+            Log.d("GetPropertyUseCase", "Property ID $propertyId has commodities IDs: $ids")
+        } ?: run {
+            Log.d("GetPropertyUseCase", "Property ID $propertyId has no commodities")
+        }
+
+        return property
     }
 }

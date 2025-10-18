@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
 import org.threeten.bp.Instant
+import java.util.concurrent.Executors
 import kotlin.random.Random
 
 /**
@@ -225,7 +226,7 @@ abstract class AppDatabase : RoomDatabase() {
                         creationDate = randomDaysBack(),
                         entryDate = randomDaysBack(30),
                         saleDate = if (Random.nextBoolean()) randomDaysBack(60) else null,
-                        apartmentNumber = Random.nextInt(31, 60), // différent numéro d’appartement
+                        apartmentNumber = Random.nextInt(31, 60),
                         realEstateTypeId = 1L,
                         locationId = sharedLocationId,
                         agentId = if (i % 2 == 0) 1L else 2L
@@ -238,73 +239,6 @@ abstract class AppDatabase : RoomDatabase() {
 
                 insertPictures(context, pictureDAO, propertyId, i)
             }
-
-            /*for (i in 1..12) {
-                val (num, streetName) = propertyAddresses[i - 1]
-
-                // --- Insert location ---
-                val locationId = locationDAO.insert(
-                    LocationDTO(
-                        id = null,
-                        latitude = centerLat + randomOffset(),
-                        longitude = centerLng + randomOffset(),
-                        street = streetName,
-                        streetNumber = num,
-                        city = "New York",
-                        postalCode = "10019",
-                        country = "United States"
-                    )
-                )
-
-                // --- Insert property ---
-                val propertyId = propertyDAO.insert(
-                    PropertyDTO(
-                        name = generateApartmentName(),
-                        description = generateApartmentDescription(),
-                        surface = Random.nextInt(80, 200).toDouble(),
-                        numbersOfRooms = Random.nextInt(4, 10),
-                        numbersOfBathrooms = Random.nextInt(1, 3),
-                        numbersOfBedrooms = Random.nextInt(1, 4),
-                        price = Random.nextInt(1_500_000, 6_000_000).toDouble(),
-                        isSold = Random.nextBoolean(),
-                        creationDate = randomDaysBack(),
-                        entryDate = randomDaysBack(30),
-                        saleDate = if (Random.nextBoolean()) randomDaysBack(60) else null,
-                        apartmentNumber = Random.nextInt(1, 30),
-                        realEstateTypeId = 1L,
-                        locationId = locationId,
-                        agentId = if (i % 2 == 0) 1L else 2L
-                    )
-                )
-
-                // --- Insert random commodities for the property ---
-                (1..12).shuffled().take(Random.nextInt(2, 6)).forEach { cId ->
-                    propertyCommodityDAO.insert(PropertyCommodityCrossRefDTO(propertyId, cId.toLong()))
-                }
-
-                // --- Insert pictures ---
-                val converter = BitmapConverter()
-                for (order in 1..5) {
-                    val resourceName = "flat_${i}_${order}"
-                    val resId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
-                    if (resId != 0) {
-                        val bitmap = BitmapFactory.decodeResource(context.resources, resId)
-                        val content = converter.fromBitmap(bitmap)
-                        val thumbnailContent = converter.fromBitmap(bitmap)
-                        pictureDAO.insert(
-                            PictureDTO(
-                                id = null,
-                                content = content ?: ByteArray(0),
-                                thumbnailContent = thumbnailContent ?: ByteArray(0),
-                                order = order - 1,
-                                propertyId = propertyId
-                            )
-                        )
-                    } else {
-                        Log.w("DBInit", "Image resource $resourceName not found!")
-                    }
-                }
-            }*/
         }
 
         private suspend fun insertPictures(
@@ -359,6 +293,12 @@ abstract class AppDatabase : RoomDatabase() {
                     DATABASE_NAME
                 )
                     .addCallback(AppDatabaseCallback(coroutineScope, context))
+                    .setQueryCallback(
+                        QueryCallback { sqlQuery, bindArgs ->
+                            Log.d("ROOM_SQL", "Query: $sqlQuery | Args: $bindArgs")
+                        },
+                        Executors.newSingleThreadExecutor()
+                    )
                     .build()
                 INSTANCE = instance
                 instance
