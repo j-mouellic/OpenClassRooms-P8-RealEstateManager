@@ -139,11 +139,6 @@ class EasyPropertyRepository @Inject constructor(
             propertyCommodityCrossRefDAO.insert(PropertyCommodityCrossRefDTO(propertyId, commodityId))
         }
 
-       /* propertyCopy.commodities.forEach { commodity ->
-            val commodityId = commodityDAO.insert(commodity.toDTO())
-            Log.d(TAG, "Re-inserting commodity crossRef: propertyId=$propertyId, commodityId=$commodityId")
-            propertyCommodityCrossRefDAO.insert(PropertyCommodityCrossRefDTO(propertyId, commodityId))
-        } */
 
         // --- Update pictures (1:N) ---
         pictureDAO.deleteByPropertyId(propertyId)
